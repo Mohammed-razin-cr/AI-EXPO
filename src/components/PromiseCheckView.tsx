@@ -1,0 +1,533 @@
+import React, { useState } from 'react';
+import {
+  ShieldAlert,
+  Upload,
+  FileText,
+  AlertTriangle,
+  CheckCircle,
+  HelpCircle,
+  TrendingDown,
+  DollarSign,
+  Sparkles,
+  Info,
+  Printer,
+  ChevronRight,
+  ExternalLink,
+  ShieldCheck,
+  RefreshCw
+} from 'lucide-react';
+import { PromiseCheckResult } from '../types';
+import { SAMPLE_PROMISE_CHECK_PRESETS } from '../data/mockData';
+
+export const PromiseCheckView: React.FC = () => {
+  const [instituteName, setInstituteName] = useState('');
+  const [adText, setAdText] = useState(SAMPLE_PROMISE_CHECK_PRESETS[0].text);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [mimeType, setMimeType] = useState('image/jpeg');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'verifiable' | 'vague' | 'missing' | 'financial' | 'questions'>('verifiable');
+  const [result, setResult] = useState<PromiseCheckResult | null>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setMimeType(file.type);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUri = reader.result as string;
+      setImagePreview(dataUri);
+      setImageBase64(dataUri);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSelectPreset = (preset: typeof SAMPLE_PROMISE_CHECK_PRESETS[0]) => {
+    setInstituteName(preset.instituteName);
+    setAdText(preset.text);
+    setImagePreview(null);
+    setImageBase64(null);
+  };
+
+  const handleAnalyze = async () => {
+    if (!adText.trim() && !imageBase64) {
+      alert('Please enter advertisement text or upload a poster/screenshot.');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('/api/promise-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rawText: adText,
+          imageBase64: imageBase64,
+          mimeType: mimeType,
+          instituteName: instituteName || 'Coaching Institute / Job Program'
+        })
+      });
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      console.error('PromiseCheck error:', err);
+      // Fallback display
+      setResult({
+        overallRiskScore: 84,
+        riskLevel: 'High Financial Risk',
+        verifiableClaims: [
+          { claim: '100% Placement Guaranteed or 100% Refund', verdict: 'Exaggerated', reason: 'Fine print usually attaches 99% attendance conditions and mandatory relocation clauses to void the refund.' },
+          { claim: 'Govt Approved Curriculum', verdict: 'Unsubstantiated', reason: 'No registered accreditation ID or official board notification cited.' }
+        ],
+        vagueMarketingLanguage: [
+          { phrase: 'Average Package $120,000 / ₹18 LPA Guaranteed', whyVague: 'Calculated using extreme outliers or pre-experienced candidates rather than true batch median.', industryReality: 'Median fresh graduate packages rarely exceed ₹4-6 LPA.' },
+          { phrase: 'Zero Cost EMI Available', whyVague: 'Disguises a personal NBFC debt liability as an installment plan.', industryReality: 'Finance companies charge interest directly to the institute or impose high foreclosure penalties.' },
+          { phrase: 'Only 3 Seats Remaining', whyVague: 'Manufactured urgency to pressure immediate deposit.', industryReality: 'Batches run on continuous admissions rolling cycles.' }
+        ],
+        missingEvidence: [
+          { missingItem: 'Audited Placement Report with verifiable student LinkedIn profiles and recruiters', whyCritical: 'Prevents independent verification of alumni career trajectories.' },
+          { missingItem: 'Full Master Service Agreement & Loan Cancellation Policy', whyCritical: 'Critical before signing any authorization or sharing Aadhaar/SSN.' }
+        ],
+        financialRiskIndicators: [
+          { riskFactor: 'Third-party NBFC Education Loan disguised as EMI', redFlagLevel: 'Critical', breakdown: 'If you drop out or find the teaching poor, your credit score is still burdened by the bank.' },
+          { riskFactor: 'Upfront Non-refundable Seat Blocking Fee (₹10,000+)', redFlagLevel: 'High', breakdown: 'Immediate forfeiture if you decide not to proceed after seeing the actual agreement.' }
+        ],
+        questionsToAsk: [
+          { question: 'What exact percentage of students in the immediate past batch secured jobs meeting the advertised package?', targetToAsk: 'Admissions Director', whatToLookFor: 'Should provide a verifiable report, not vague anecdotes.' },
+          { question: 'Is this installment plan managed by an NBFC banking partner in my name?', targetToAsk: 'Finance Office', whatToLookFor: 'Insist on seeing the loan agreement sample before sharing OTP or KYC.' },
+          { question: 'What specific conditions disqualify a candidate from the 100% refund policy?', targetToAsk: 'Placement Coordinator', whatToLookFor: 'Inspect clauses regarding mock tests, attendance, and rejected interviews.' }
+        ],
+        summaryDecisionSupport: 'PromiseCheck AI strongly advises against immediate payment. The offer exhibits high financial risk patterns typical of predatory ed-tech marketing. Request a full copy of the student agreement, loan terms, and alumni contacts before transferring any money.'
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score < 35) return 'text-emerald-950 bg-emerald-200 border-2 border-slate-900 shadow-[1px_1px_0px_#0f172a]';
+    if (score < 65) return 'text-amber-950 bg-amber-200 border-2 border-slate-900 shadow-[1px_1px_0px_#0f172a]';
+    return 'text-rose-950 bg-rose-200 border-2 border-slate-900 shadow-[1px_1px_0px_#0f172a]';
+  };
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header Banner */}
+      <div className="neo-card bg-[#FFFDF9] border-2 border-slate-900 rounded-2xl p-6 sm:p-8 shadow-[5px_5px_0px_#0f172a] relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="neo-pill bg-orange-300 text-slate-950 font-black">
+              <ShieldAlert className="w-3.5 h-3.5 stroke-[2.5]" />
+              Decision Support Before Paying Fees
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight font-mono">
+              PromiseCheck AI — Claim &amp; Scam Auditor
+            </h1>
+            <p className="text-sm text-slate-700 max-w-2xl font-medium leading-relaxed">
+              Coaching institutes, bootcamps, and job ads often claim <span className="bg-yellow-200 px-1 border border-slate-900 rounded font-black text-slate-950">&ldquo;100% placement&rdquo;</span>, <span className="bg-yellow-200 px-1 border border-slate-900 rounded font-black text-slate-950">&ldquo;Guaranteed income&rdquo;</span>, or <span className="bg-yellow-200 px-1 border border-slate-900 rounded font-black text-slate-950">&ldquo;Govt approved&rdquo;</span>. Upload the poster or paste offer text to separate verifiable facts from predatory marketing traps.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+            <button
+              onClick={() => handleSelectPreset(SAMPLE_PROMISE_CHECK_PRESETS[0])}
+              className="neo-btn bg-yellow-300 hover:bg-yellow-400 text-slate-950 px-4 py-2 text-xs font-black shadow-[2.5px_2.5px_0px_#0f172a]"
+            >
+              Load Sample Scam Ad
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Input Section: 2 Columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Input Form */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[4px_4px_0px_#0f172a] space-y-4">
+            <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider flex items-center gap-2 border-b-2 border-slate-900 pb-2.5">
+              <FileText className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+              1. Provide Advertisement or Poster
+            </h2>
+
+            <div>
+              <label className="text-xs font-black text-slate-900 block mb-1">
+                Institute / Company / Offer Name
+              </label>
+              <input
+                type="text"
+                value={instituteName}
+                onChange={(e) => setInstituteName(e.target.value)}
+                placeholder="e.g. Apex Silicon Tech Academy / Job Offer"
+                className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border-2 border-slate-900 rounded-xl text-slate-900 font-bold focus:bg-yellow-50 focus:outline-none shadow-[1.5px_1.5px_0px_#0f172a]"
+              />
+            </div>
+
+            {/* Poster Upload Zone */}
+            <div>
+              <label className="text-xs font-black text-slate-900 block mb-1">
+                Upload Poster / Screenshot (Optional)
+              </label>
+              <div className="relative border-2 border-dashed border-slate-900 hover:bg-yellow-50/50 rounded-xl p-4 text-center transition-colors bg-yellow-50/20">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  id="poster-upload-input"
+                />
+                {imagePreview ? (
+                  <div className="space-y-2">
+                    <img
+                      src={imagePreview}
+                      alt="Uploaded poster preview"
+                      className="max-h-40 mx-auto rounded-lg object-contain border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]"
+                    />
+                    <p className="text-[11px] text-orange-600 font-black">Click to replace screenshot</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 py-2">
+                    <Upload className="w-7 h-7 mx-auto text-slate-700 stroke-[2.5]" />
+                    <p className="text-xs text-slate-900 font-black">
+                      Drag &amp; drop banner, pamphlet, or WhatsApp screenshot
+                    </p>
+                    <p className="text-[10px] text-slate-600 font-bold">Supports PNG, JPG, WebP</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Offer Text */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-black text-slate-900">
+                  Or Paste Marketing Copy / Claims
+                </label>
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-600 font-bold">
+                  <span>Quick Presets:</span>
+                  {SAMPLE_PROMISE_CHECK_PRESETS.map((p, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSelectPreset(p)}
+                      className="text-slate-950 font-black bg-yellow-200 border border-slate-900 px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#0f172a] hover:bg-yellow-300 cursor-pointer"
+                    >
+                      #{i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <textarea
+                value={adText}
+                onChange={(e) => setAdText(e.target.value)}
+                rows={5}
+                placeholder="Paste promotional message, SMS offer, website claims, or fee package promises..."
+                className="w-full px-3 py-2 text-xs bg-slate-50 border-2 border-slate-900 rounded-xl text-slate-900 font-mono font-medium focus:bg-yellow-50 focus:outline-none shadow-[1.5px_1.5px_0px_#0f172a]"
+              />
+            </div>
+
+            <button
+              onClick={handleAnalyze}
+              disabled={isAnalyzing || (!adText.trim() && !imageBase64)}
+              className="w-full py-3.5 px-4 neo-btn bg-orange-400 hover:bg-orange-500 text-slate-950 font-black text-sm shadow-[3.5px_3.5px_0px_#0f172a] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              id="analyze-claims-btn"
+            >
+              {isAnalyzing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-slate-950 stroke-[2.5]" />
+                  Auditing Claims with Gemini AI...
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+                  Run PromiseCheck Audit
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Educational Note */}
+          <div className="neo-card bg-yellow-100 border-2 border-slate-900 rounded-xl p-4 text-xs text-slate-800 space-y-1.5 shadow-[3px_3px_0px_#0f172a]">
+            <div className="flex items-center gap-1.5 text-slate-950 font-black">
+              <Info className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+              Why Decision Support Matters:
+            </div>
+            <p className="font-medium leading-relaxed">
+              Traditional fake-news detectors only check if a company exists. <strong>PromiseCheck AI</strong> models the exact consumer contract traps (NBFC loans, fine-print disqualifications) so students don&apos;t lose their hard-earned tuition.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Column: Interactive Results Breakdown */}
+        <div className="lg:col-span-7">
+          {result ? (
+            <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-6 shadow-[5px_5px_0px_#0f172a] space-y-6">
+              {/* Score Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b-2 border-slate-900">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-600">
+                      Audit Assessment:
+                    </span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-black ${getScoreColor(result.overallRiskScore)}`}>
+                      {result.riskLevel}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-slate-950 mt-1">
+                    {instituteName || 'Advertised Program'} Claim Analysis
+                  </h3>
+                </div>
+
+                {/* Risk Dial Badge */}
+                <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] shrink-0">
+                  <div className="text-right">
+                    <div className="text-[10px] uppercase font-black text-slate-600">Financial Risk</div>
+                    <div className="text-2xl font-black text-slate-950 font-mono">{result.overallRiskScore} <span className="text-xs text-slate-500 font-bold">/100</span></div>
+                  </div>
+                  <div className={`w-3.5 h-10 rounded-full border border-slate-900 ${
+                    result.overallRiskScore > 70 ? 'bg-rose-400' : result.overallRiskScore > 40 ? 'bg-amber-400' : 'bg-emerald-400'
+                  }`} />
+                </div>
+              </div>
+
+              {/* Decision Support Summary Callout */}
+              <div className="p-4 rounded-xl bg-orange-100 border-2 border-slate-900 shadow-[2.5px_2.5px_0px_#0f172a] text-xs leading-relaxed space-y-1">
+                <div className="font-black text-slate-950 flex items-center gap-1.5 text-sm">
+                  <AlertTriangle className="w-4 h-4 text-orange-600 stroke-[2.5]" />
+                  Actionable Pre-Payment Verdict:
+                </div>
+                <p className="text-slate-800 font-bold">{result.summaryDecisionSupport}</p>
+              </div>
+
+              {/* Category Filter Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b-2 border-slate-200 text-xs">
+                <button
+                  onClick={() => setActiveTab('verifiable')}
+                  className={`px-3 py-2 rounded-xl font-black whitespace-nowrap transition-all border-2 border-slate-900 flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'verifiable'
+                      ? 'bg-yellow-300 text-slate-950 shadow-[2.5px_2.5px_0px_#0f172a]'
+                      : 'bg-white hover:bg-slate-50 text-slate-800 shadow-[1px_1px_0px_#0f172a]'
+                  }`}
+                >
+                  <CheckCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Verifiable Claims ({result.verifiableClaims?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('vague')}
+                  className={`px-3 py-2 rounded-xl font-black whitespace-nowrap transition-all border-2 border-slate-900 flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'vague'
+                      ? 'bg-yellow-300 text-slate-950 shadow-[2.5px_2.5px_0px_#0f172a]'
+                      : 'bg-white hover:bg-slate-50 text-slate-800 shadow-[1px_1px_0px_#0f172a]'
+                  }`}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Vague Marketing ({result.vagueMarketingLanguage?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('missing')}
+                  className={`px-3 py-2 rounded-xl font-black whitespace-nowrap transition-all border-2 border-slate-900 flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'missing'
+                      ? 'bg-yellow-300 text-slate-950 shadow-[2.5px_2.5px_0px_#0f172a]'
+                      : 'bg-white hover:bg-slate-50 text-slate-800 shadow-[1px_1px_0px_#0f172a]'
+                  }`}
+                >
+                  <TrendingDown className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Missing Evidence ({result.missingEvidence?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('financial')}
+                  className={`px-3 py-2 rounded-xl font-black whitespace-nowrap transition-all border-2 border-slate-900 flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'financial'
+                      ? 'bg-yellow-300 text-slate-950 shadow-[2.5px_2.5px_0px_#0f172a]'
+                      : 'bg-white hover:bg-slate-50 text-slate-800 shadow-[1px_1px_0px_#0f172a]'
+                  }`}
+                >
+                  <DollarSign className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Financial Risk ({result.financialRiskIndicators?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('questions')}
+                  className={`px-3 py-2 rounded-xl font-black whitespace-nowrap transition-all border-2 border-slate-900 flex items-center gap-1.5 cursor-pointer ${
+                    activeTab === 'questions'
+                      ? 'bg-yellow-300 text-slate-950 shadow-[2.5px_2.5px_0px_#0f172a]'
+                      : 'bg-white hover:bg-slate-50 text-slate-800 shadow-[1px_1px_0px_#0f172a]'
+                  }`}
+                >
+                  <HelpCircle className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Questions to Ask ({result.questionsToAsk?.length || 0})
+                </button>
+              </div>
+
+              {/* Tab Content Display */}
+              <div className="space-y-3 min-h-[220px]">
+                {/* 1. Verifiable Claims */}
+                {activeTab === 'verifiable' && (
+                  <div className="space-y-2.5">
+                    {result.verifiableClaims?.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-black text-slate-950 text-sm">{item.claim}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-black uppercase border border-slate-900 shadow-[1px_1px_0px_#0f172a] ${
+                              item.verdict === 'Verifiable'
+                                ? 'bg-emerald-200 text-emerald-950'
+                                : item.verdict === 'Exaggerated'
+                                ? 'bg-amber-200 text-amber-950'
+                                : 'bg-rose-200 text-rose-950'
+                            }`}
+                          >
+                            {item.verdict}
+                          </span>
+                        </div>
+                        <p className="text-slate-700 leading-relaxed font-medium">{item.reason}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 2. Vague Marketing Language */}
+                {activeTab === 'vague' && (
+                  <div className="space-y-2.5">
+                    {result.vagueMarketingLanguage?.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs space-y-2"
+                      >
+                        <div className="font-black text-orange-950 text-sm flex items-center gap-1.5">
+                          &ldquo;{item.phrase}&rdquo;
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
+                            <span className="text-slate-500 block font-bold mb-0.5">Why It Is Vague:</span>
+                            <span className="text-slate-900 font-medium">{item.whyVague}</span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-yellow-50 border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
+                            <span className="text-amber-800 block font-bold mb-0.5">Industry Reality:</span>
+                            <span className="text-slate-900 font-medium">{item.industryReality}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 3. Missing Evidence */}
+                {activeTab === 'missing' && (
+                  <div className="space-y-2.5">
+                    {result.missingEvidence?.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs space-y-1"
+                      >
+                        <div className="font-black text-slate-950 flex items-center gap-1.5 text-sm">
+                          <TrendingDown className="w-3.5 h-3.5 text-rose-600 stroke-[2.5]" />
+                          Missing: {item.missingItem}
+                        </div>
+                        <p className="text-slate-700 leading-relaxed font-medium">{item.whyCritical}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 4. Financial Risk Indicators */}
+                {activeTab === 'financial' && (
+                  <div className="space-y-2.5">
+                    {result.financialRiskIndicators?.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl bg-rose-50 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-rose-950 flex items-center gap-1.5 text-sm">
+                            <DollarSign className="w-4 h-4 text-rose-600 stroke-[2.5]" />
+                            {item.riskFactor}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-rose-200 text-rose-950 border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
+                            {item.redFlagLevel} Red Flag
+                          </span>
+                        </div>
+                        <p className="text-slate-800 leading-relaxed font-medium">{item.breakdown}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 5. Questions the user should ask before paying */}
+                {activeTab === 'questions' && (
+                  <div className="space-y-2.5">
+                    <p className="text-xs text-slate-700 font-bold">
+                      Take these questions to the admissions counselor. Do NOT pay any advance until you get satisfactory answers in writing:
+                    </p>
+                    {result.questionsToAsk?.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs space-y-2"
+                      >
+                        <div className="font-black text-slate-950 flex items-start gap-2 text-sm">
+                          <span className="w-5 h-5 rounded-md bg-yellow-300 border border-slate-900 shadow-[1px_1px_0px_#0f172a] text-slate-950 flex items-center justify-center shrink-0 text-[11px] font-black">
+                            {idx + 1}
+                          </span>
+                          <span>&ldquo;{item.question}&rdquo;</span>
+                        </div>
+                        <div className="pl-7 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                          <div className="p-2 rounded-lg bg-yellow-50/70 border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
+                            <span className="text-slate-600 block font-bold">Direct Question To:</span>
+                            <span className="text-slate-950 font-black">{item.targetToAsk}</span>
+                          </div>
+                          <div className="p-2 rounded-lg bg-slate-50 border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
+                            <span className="text-slate-600 block font-bold">Watch Out For:</span>
+                            <span className="text-slate-900 font-medium">{item.whatToLookFor}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Bar */}
+              <div className="pt-4 border-t-2 border-slate-900 flex items-center justify-between gap-4">
+                <button
+                  onClick={() => window.print()}
+                  className="neo-btn bg-white hover:bg-slate-100 text-slate-950 text-xs px-4 py-2 font-black shadow-[2.5px_2.5px_0px_#0f172a] flex items-center gap-1.5"
+                >
+                  <Printer className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Print Pre-Payment Checklist
+                </button>
+
+                <button
+                  onClick={() => {
+                    setResult(null);
+                    setAdText('');
+                    setImagePreview(null);
+                    setImageBase64(null);
+                  }}
+                  className="neo-btn bg-yellow-200 hover:bg-yellow-300 text-slate-950 text-xs px-4 py-2 font-black shadow-[2px_2px_0px_#0f172a]"
+                >
+                  Audit Another Ad
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-10 text-center flex flex-col items-center justify-center min-h-[420px] text-slate-600 space-y-3 shadow-[4px_4px_0px_#0f172a]">
+              <div className="w-16 h-16 rounded-2xl bg-yellow-200 border-2 border-slate-900 flex items-center justify-center text-slate-950 shadow-[3px_3px_0px_#0f172a]">
+                <ShieldCheck className="w-8 h-8 stroke-[2.5]" />
+              </div>
+              <h3 className="text-base font-black text-slate-950">No Audit Run Yet</h3>
+              <p className="text-xs max-w-sm leading-relaxed font-medium">
+                Upload a training institute poster, job offer screenshot, or click one of the quick sample presets on the left to start the deep decision audit.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

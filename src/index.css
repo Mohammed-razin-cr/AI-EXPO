@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.012em;
+    background-color: #F7F5F0;
+    color: #0F172A;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Outfit', sans-serif;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+}
+
+/* Neo-Collegiate Graphic Utilities */
+.neo-card {
+  background-color: #FFFFFF;
+  border: 2px solid #0F172A;
+  box-shadow: 3.5px 3.5px 0px #0F172A;
+  border-radius: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neo-card-interactive {
+  background-color: #FFFFFF;
+  border: 2px solid #0F172A;
+  box-shadow: 3.5px 3.5px 0px #0F172A;
+  border-radius: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.neo-card-interactive:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 5px 5px 0px #0F172A;
+}
+.neo-card-interactive:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #0F172A;
+}
+
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  border: 2px solid #0F172A;
+  box-shadow: 2.5px 2.5px 0px #0F172A;
+  border-radius: 12px;
+  transition: all 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0px #0F172A;
+}
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #0F172A;
+}
+
+.neo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border: 1.5px solid #0F172A;
+  border-radius: 9999px;
+  box-shadow: 1.5px 1.5px 0px #0F172A;
+  padding: 0.2rem 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.neo-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 700;
+  font-size: 0.7rem;
+  border: 1.5px solid #0F172A;
+  border-radius: 8px;
+  box-shadow: 1.5px 1.5px 0px #0F172A;
+  padding: 0.15rem 0.5rem;
+}
+
+/* Notebook subtle dot grid */
+.neo-grid-pattern {
+  background-image: radial-gradient(#CBD5E1 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Custom tactile scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1EFE9;
+  border-left: 1.5px solid #0F172A;
+}
+::-webkit-scrollbar-thumb {
+  background: #0F172A;
+  border: 2px solid #F1EFE9;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
