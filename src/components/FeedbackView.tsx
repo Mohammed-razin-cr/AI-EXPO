@@ -26,6 +26,7 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
   const [targetName, setTargetName] = useState('');
   const [rating, setRating] = useState(5);
   const [comments, setComments] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +49,7 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
     };
 
     onAddFeedback(newItem);
+    setSubmitted(true);
     setTargetName('');
     setComments('');
     setRating(5);
@@ -63,10 +65,10 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
             Continuous Campus Improvement
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight font-mono">
-            Student Feedback &amp; Faculty Review System
+            Your voice matters.
           </h1>
           <p className="text-xs sm:text-sm text-slate-700 font-medium max-w-xl mt-1 leading-relaxed">
-            Provide transparent, constructive ratings for courses, faculty teaching methods, campus facilities, and dining halls to empower administrative decision making.
+            Share what’s working and what could be better, from your classroom to the dining hall.
           </p>
         </div>
       </div>
@@ -77,13 +79,14 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
           <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[4px_4px_0px_#0f172a] space-y-4">
             <h3 className="font-black text-sm text-slate-950 uppercase tracking-wider flex items-center gap-2">
               <Sparkles className="w-4 h-4 stroke-[2.5]" />
-              Submit Constructive Feedback
+              Share your experience
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-3.5 text-xs font-medium">
               <div>
-                <label className="font-black text-slate-900 block mb-1">Feedback Category</label>
+                <label htmlFor="feedback-category" className="font-black text-slate-900 block mb-1">Feedback category</label>
                 <select
+                  id="feedback-category"
                   value={feedbackType}
                   onChange={(e) => setFeedbackType(e.target.value as any)}
                   className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-slate-950 font-bold focus:bg-yellow-50 focus:outline-none shadow-[1.5px_1.5px_0px_#0f172a]"
@@ -96,10 +99,11 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
               </div>
 
               <div>
-                <label className="font-black text-slate-900 block mb-1">
+                <label htmlFor="feedback-subject" className="font-black text-slate-900 block mb-1">
                   Subject / Professor / Facility Name
                 </label>
                 <input
+                  id="feedback-subject"
                   type="text"
                   value={targetName}
                   onChange={(e) => setTargetName(e.target.value)}
@@ -111,13 +115,15 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
 
               <div>
                 <label className="font-black text-slate-900 block mb-1">Star Rating (1 - 5)</label>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setRating(star)}
-                      className="p-1 hover:scale-110 transition-transform cursor-pointer"
+                      aria-label={star + (star === 1 ? ' star' : ' stars')}
+                      aria-pressed={rating === star}
+                      className="grid h-11 w-11 place-items-center rounded-lg hover:bg-amber-50 transition-colors cursor-pointer"
                     >
                       <Star
                         className={`w-6 h-6 stroke-[2] ${
@@ -131,8 +137,9 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
               </div>
 
               <div>
-                <label className="font-black text-slate-900 block mb-1">Detailed Observations</label>
+                <label htmlFor="feedback-comments" className="font-black text-slate-900 block mb-1">Tell us more</label>
                 <textarea
+                  id="feedback-comments"
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
                   rows={4}
@@ -147,8 +154,9 @@ export const FeedbackView: React.FC<FeedbackViewProps> = ({
                 className="w-full py-2.5 px-4 neo-btn bg-yellow-300 hover:bg-yellow-400 text-slate-950 font-black shadow-[2.5px_2.5px_0px_#0f172a] flex items-center justify-center gap-1.5"
               >
                 <Send className="w-3.5 h-3.5 stroke-[2.5]" />
-                Submit Anonymous Feedback
+                Submit feedback
               </button>
+              {submitted && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-emerald-800">Thank you. Your feedback has been added below.</p>}
             </form>
           </div>
         </div>

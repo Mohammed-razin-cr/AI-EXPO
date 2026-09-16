@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "project": {
+    "name": "react-example",
+    "productType": null,
+    "stack": [
+      "react",
+      "tailwind-v4",
+      "vite"
+    ]
+  },
+  "sources": {
+    "tokens": [
+      "src/index.css"
+    ],
+    "components": [],
+    "assets": [],
+    "instructions": []
+  },
+  "design": {
+    "colorMode": "light",
+    "colors": {
+      "primary": "#36573E",
+      "accent": "#466B50",
+      "background": "#F7F8FA",
+      "surface": "#FFFFFF",
+      "border": "#DBE2EA",
+      "highlight": "#E9EEDF"
+    },
+    "typography": {
+      "family": "Plus Jakarta Sans",
+      "tone": "clear, approachable, institutional"
+    },
+    "spacing": { "density": "comfortable dashboard" },
+    "radius": { "control": "8px", "card": "13-15px" },
+    "shadows": { "default": "soft, low elevation" },
+    "motion": { "level": "subtle", "reducedMotion": true },
+    "density": "standard"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": [],
+    "patterns": []
+  },
+  "constraints": {
+    "must": [],
+    "avoid": []
+  },
+  "decisions": [
+    "Landing motion pass: Outfit headings with Jakarta Sans body, code-native layered service illustrations, duotone Lucide role emblems, gentle pointer tilt and viewport-scoped scanning/float animations. Provide pause and prefers-reduced-motion support; preserve ivory and forest-green identity.",
+    "Service interiors: shared sage cards and native accessible dialogs; split ticket list/details, searchable saved notices with a separate inbox, resident passes with validated date inputs and a weekly meal picker. Explicitly label demo outpasses rather than presenting placeholder QR icons as valid passes.",
+    "Second UI pass: use forest green, sage and neutral surfaces with a compact desktop workspace sidebar.",
+    "Keep the warm collegiate personality while replacing heavy black outlines and offset shadows with soft borders and low elevation.",
+    "Prioritize an always-visible module navigation, 44px minimum controls, visible keyboard focus, and reduced-motion support.",
+    "Show record-derived metrics, an interactive weekday schedule, campus shortcuts and notices on the overview.",
+    "Use a two-column expandable services menu on phones, with URL-backed module navigation and browser Back support.",
+    "Public landing page: ivory and forest-green editorial design, italic serif headline accents, product previews from sample data, feature and role sections, and native FAQ disclosure. Public home is #landing; the existing dashboard is #overview."
+  ],
+  "evidence": [
+    {
+      "fact": "design.tokens",
+      "source": "src/index.css"
+    },
+    {
+      "fact": "project.stack:react",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:tailwind-v4",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:vite",
+      "source": "package.json"
+    }
+  ],
+  "generatedAt": "2026-09-16T19:39:56.693Z"
+}

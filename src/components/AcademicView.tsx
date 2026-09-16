@@ -26,13 +26,17 @@ export const AcademicView: React.FC<AcademicViewProps> = ({
   timetable,
   onOpenDocumentRequest,
 }) => {
-  const [selectedDay, setSelectedDay] = useState<TimetableSlot['day']>('Monday');
+  const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const [selectedDay, setSelectedDay] = useState<TimetableSlot['day']>(
+    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(weekday) ? weekday as TimetableSlot['day'] : 'Monday'
+  );
   const days: TimetableSlot['day'][] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
   const dailySchedule = timetable.filter((slot) => slot.day === selectedDay);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="page-heading"><div><p className="eyebrow">ACADEMICS</p><h1>A little progress, every day.</h1><p>Your courses, attendance and weekly schedule in one place.</p></div></div>
       {/* Top Academic Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* CGPA Card */}
@@ -88,8 +92,8 @@ export const AcademicView: React.FC<AcademicViewProps> = ({
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-950 font-mono">16</span>
-            <span className="text-xs text-slate-600 font-bold">Credits (5 Courses)</span>
+            <span className="text-3xl font-black text-slate-950 font-mono">{courses.reduce((sum, course) => sum + course.credits, 0)}</span>
+            <span className="text-xs text-slate-600 font-bold">Credits ({courses.length} courses)</span>
           </div>
           <p className="text-[11px] text-slate-600 font-medium mt-1">{user.semester} • Regular Status</p>
         </div>
@@ -189,7 +193,7 @@ export const AcademicView: React.FC<AcademicViewProps> = ({
                       <div className="p-2.5 rounded-lg bg-rose-100 border-2 border-slate-900 text-[11px] text-rose-950 flex items-center gap-2 font-black shadow-[1.5px_1.5px_0px_#0f172a]">
                         <AlertTriangle className="w-4 h-4 shrink-0 text-rose-700 stroke-[2.5]" />
                         <span>
-                          Attendance is below mandatory 75% cutoff! Attend next 2 sessions to regain eligibility.
+                          Below the 75% target. Attend the next {Math.max(0, Math.ceil((0.75 * course.totalClasses - course.classesAttended) / 0.25))} sessions to reach it, assuming no further absences.
                         </span>
                       </div>
                     )}
@@ -217,6 +221,7 @@ export const AcademicView: React.FC<AcademicViewProps> = ({
                 <button
                   key={d}
                   onClick={() => setSelectedDay(d)}
+                  aria-pressed={selectedDay === d}
                   className={`py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                     selectedDay === d
                       ? 'bg-yellow-300 text-slate-950 border border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]'

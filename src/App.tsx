@@ -5,19 +5,18 @@ import {
   Sparkles,
   FileText,
   AlertCircle,
-  Home,
   Megaphone,
   MessageSquare,
   BarChart3,
-  Bot,
-  Bell,
   LayoutDashboard,
   Building2
 } from 'lucide-react';
 import { Navbar } from './components/Navbar';
+import { CampusNavigation } from './components/CampusNavigation';
 import { LoginModal } from './components/LoginModal';
 import { AssistantDrawer } from './components/AssistantDrawer';
 import { LandingPageView } from './components/LandingPageView';
+import { PublicLandingPage } from './components/PublicLandingPage';
 import { AcademicView } from './components/AcademicView';
 import { PromiseCheckView } from './components/PromiseCheckView';
 import { CampusFindView } from './components/CampusFindView';
@@ -59,9 +58,27 @@ import {
   SAMPLE_CAMPUS_FIND_ITEMS,
 } from './data/mockData';
 
+const MODULE_IDS = ['landing', 'overview', 'academic', 'promisecheck', 'campusfind', 'documents', 'complaints', 'hostel', 'announcements', 'feedback', 'admin'];
+const readLocation = () => {
+  const id = window.location.hash.slice(1);
+  return MODULE_IDS.includes(id) ? id : 'landing';
+};
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_USER_STUDENT);
-  const [activeTab, setActiveTab] = useState<string>('landing');
+  const [activeTab, updateActiveTab] = useState<string>(readLocation);
+  const setActiveTab = (id: string) => {
+    if (!MODULE_IDS.includes(id)) return;
+    if (window.location.hash !== '#' + id) window.history.pushState(null, '', '#' + id);
+    updateActiveTab(id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+  React.useEffect(() => {
+    const syncLocation = () => { updateActiveTab(readLocation()); window.scrollTo({ top: 0, behavior: 'instant' }); };
+    window.addEventListener('popstate', syncLocation);
+    window.addEventListener('hashchange', syncLocation);
+    return () => { window.removeEventListener('popstate', syncLocation); window.removeEventListener('hashchange', syncLocation); };
+  }, []);
   const [currentLanguage, setCurrentLanguage] = useState<string>('English');
   const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
@@ -99,7 +116,7 @@ export default function App() {
   };
 
   const handleClearNotifications = () => {
-    setNotifications([]);
+    setNotifications(prev => prev.filter(notification => !notification.read));
   };
 
   // Add Handlers
@@ -166,7 +183,7 @@ export default function App() {
       {
         id: `notif-${Date.now()}`,
         title: `Gatepass Issued: ${newPass.passNo}`,
-        message: `Warden approved outpass for ${newPass.destination}. Show QR code to campus gate security.`,
+        message: `Demo outpass created for ${newPass.destination}. View trip details in Hostel & Mess.`,
         timeAgo: 'Just now',
         category: 'hostel',
         read: false,
@@ -204,9 +221,9 @@ export default function App() {
 
   // Tab List - Concise & Uncluttered
   const TABS = [
-    { id: 'landing', label: 'Overview', icon: LayoutDashboard },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'academic', label: 'Academics', icon: GraduationCap },
-    { id: 'promisecheck', label: 'PromiseCheck AI', icon: ShieldCheck },
+    { id: 'promisecheck', label: 'PromiseCheck', icon: ShieldCheck },
     { id: 'campusfind', label: 'CampusFind', icon: Sparkles },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'complaints', label: 'Complaints', icon: AlertCircle },
@@ -216,8 +233,15 @@ export default function App() {
     { id: 'admin', label: 'Admin', icon: BarChart3 },
   ];
 
+  if (activeTab === 'landing') {
+    return <PublicLandingPage onNavigate={setActiveTab} onExploreRole={(role) => { handleSwitchRole(role); setActiveTab(role === 'admin' ? 'admin' : 'overview'); }} />;
+  }
+
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-slate-900 flex flex-col selection:bg-yellow-300 selection:text-slate-950 neo-grid-pattern">
+    <div className="campus-app min-h-screen text-slate-900 flex flex-col">
+      <a href="#main-content" className="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-bold text-slate-950 shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+        Skip to main content
+      </a>
       {/* Top Navigation */}
       <Navbar
         user={currentUser}
@@ -232,42 +256,19 @@ export default function App() {
         onSelectTab={setActiveTab}
       />
 
-      {/* Clean, Unified Sub-Navigation (hidden on landing page) */}
-      {activeTab !== 'landing' && (
-        <nav className="border-b-2 border-slate-900 bg-white sticky top-16 z-30 shadow-[0px_2px_0px_#0f172a]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar">
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                      isActive
-                        ? 'bg-yellow-300 text-slate-950 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]'
-                        : 'text-slate-600 hover:text-slate-950 font-bold hover:bg-slate-100 border border-transparent'
-                    }`}
-                    id={`tab-btn-${tab.id}`}
-                  >
-                    <Icon className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </nav>
-      )}
+      <CampusNavigation tabs={TABS} activeTab={activeTab} onNavigate={setActiveTab} onOpenAssistant={() => setIsAssistantOpen(true)} />
 
       {/* Main Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {activeTab === 'landing' && (
+      <main id="main-content" className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {activeTab === 'overview' && (
           <LandingPageView
             onNavigate={(tab) => setActiveTab(tab)}
-            onOpenAssistant={(prompt) => setIsAssistantOpen(true)}
-            onSwitchRole={handleSwitchRole}
+            onOpenAssistant={() => setIsAssistantOpen(true)}
+            courses={courses}
+            timetable={timetable}
+            documents={documents}
+            notifications={notifications}
+            announcements={announcements}
             currentUser={currentUser}
           />
         )}
@@ -350,15 +351,15 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-2 border-slate-900 bg-white py-6 text-center text-xs text-slate-800 transition-colors duration-200 shadow-[0px_-2px_0px_#0f172a]">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-600">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-black text-slate-950 uppercase tracking-tight">Campus360 AI &amp; PromiseCheck</span>
-            <span className="text-slate-500">•</span>
-            <span className="font-bold text-slate-700">Unified Student Intelligence &amp; Decision Support</span>
+            <span className="font-extrabold text-slate-900">Campus360 AI</span>
+            <span className="text-slate-300">•</span>
+            <span>Built for student success</span>
           </div>
-          <p className="text-[11px] font-bold text-slate-500 font-mono">
-            Protected by Campus360 AI • PromiseCheck Decision Support System • Powered by Google Gemini
+          <p className="text-[11px] font-semibold text-slate-400">
+            Secure campus services • Powered by Google Gemini
           </p>
         </div>
       </footer>
