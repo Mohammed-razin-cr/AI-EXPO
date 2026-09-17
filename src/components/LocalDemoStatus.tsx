@@ -1,0 +1,8 @@
+import React, { useEffect, useState } from 'react';
+export function LocalDemoStatus() {
+ const [status,setStatus] = useState<string>('Checking AI connections…');
+ const [error,setError] = useState(false);
+ const refresh = () => { fetch('/api/health').then(r=>{if(!r.ok)throw new Error();return r.json();}).then(data=>setStatus('Database: '+(data.database?.configured?'Supabase connected':'browser fallback')+' · Gemini '+(data.ai.gemini?'configured':'not configured')+' · Groq '+(data.ai.groq?'configured':'not configured')+' · CampusFind: local MiniLM.')).catch(()=>setStatus('Application server is unavailable. Start or restart the local server.')); };
+ useEffect(()=>{refresh();const warn=()=>setError(true);window.addEventListener('campus-storage-error',warn);window.addEventListener('campus-database-error',warn);return()=>{window.removeEventListener('campus-storage-error',warn);window.removeEventListener('campus-database-error',warn);};},[]);
+ return <aside className="mb-6 rounded-xl border border-slate-200 bg-white p-4 text-xs leading-relaxed text-slate-600" aria-label="Local demo status"><strong>Local demo · Supabase-backed records with browser fallback</strong><p>{status} Configured does not guarantee valid credentials.</p><p>AI requests send entered content to your configured provider. Do not upload sensitive records. Role switching is not authentication.</p><button className="mt-2 min-h-11 underline" onClick={refresh}>Refresh service status</button>{error&&<p role="alert" className="text-red-700">Cloud persistence is temporarily unavailable. Changes remain in this browser and will sync again after reload when Supabase is reachable.</p>}</aside>;
+}

@@ -15,9 +15,9 @@ const features = [
 ];
 const questions = [
   ['What can I explore in the demo?', 'Explore schedules and attendance, request documents, report campus issues, browse lost and found items, and try PromiseCheck. The workspace uses sample campus records.'],
-  ['Is Campus360 only for students?', 'No. You can switch between student, faculty and administrator demo views. Each brings a different perspective on campus services and institutional information.'],
+  ['Is Yukti AI only for students?', 'No. You can switch between student, faculty and administrator demo views. Each brings a different perspective on campus services and institutional information.'],
   ['How does PromiseCheck help?', 'It helps you examine education and job offers for unclear guarantees, missing evidence and risky conditions. Its analysis supports your research; it does not certify an offer or replace professional advice.'],
-  ['Does the AI need an API key?', 'Live Gemini responses require a configured API key. Without one, the local demo provides sample responses so you can explore how the experience works.'],
+  ['Does the AI need an API key?', 'The assistant, offer analysis and reports need a Gemini or Groq key configured on the server. Poster analysis requires Gemini. CampusFind uses a downloaded local MiniLM model; complaint routing can use local rules without a key.'],
 ];
 
 export function PublicLandingPage({ onNavigate, onExploreRole }: Props) {
@@ -50,7 +50,7 @@ export function PublicLandingPage({ onNavigate, onExploreRole }: Props) {
     <a className="pl-skip" href="#public-main" onClick={event => { event.preventDefault(); document.getElementById('public-main')?.focus(); }}>Skip to content</a>
     <header className="pl-header">
       <div className="pl-nav-wrap">
-        <button className="pl-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })} aria-label="Campus360 home"><span className="pl-brand-mark"><GraduationCap size={24}/></span>campus360<span className="pl-brand-dot">.</span></button>
+        <button className="pl-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })} aria-label="Yukti AI home"><span className="pl-brand-mark"><GraduationCap size={24}/></span>yukti ai<span className="pl-brand-dot">.</span></button>
         <nav className="pl-desktop-nav" aria-label="Landing page"><button onClick={() => scrollTo('pl-platform')}>The platform</button><button onClick={() => scrollTo('pl-promise')}>PromiseCheck AI <span>NEW</span></button><button onClick={() => scrollTo('pl-people')}>For your campus</button></nav>
         <div className="pl-nav-actions"><button className="pl-nav-login" onClick={() => onNavigate('overview')}>Open dashboard <ArrowUpRight size={16}/></button><button className="pl-menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="pl-mobile-nav" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X/> : <Menu/>}</button></div>
       </div>
@@ -68,7 +68,7 @@ export function PublicLandingPage({ onNavigate, onExploreRole }: Props) {
         <div className="pl-hero-visual">
           <div className="pl-orbit pl-orbit-one"/><div className="pl-orbit pl-orbit-two"/>
           <div className="pl-preview">
-            <div className="pl-preview-top"><span><GraduationCap size={17}/> campus360.</span><span className="pl-demo-tag">WORKSPACE PREVIEW</span></div>
+            <div className="pl-preview-top"><span><GraduationCap size={17}/> yukti ai.</span><span className="pl-demo-tag">WORKSPACE PREVIEW</span></div>
             <div className="pl-preview-body">
               <div className="pl-preview-rail" aria-hidden="true"><LayoutDashboard/><CalendarDays/><FileText/><MessageSquare/><Building2/></div>
               <div className="pl-preview-content"><div className="pl-preview-welcome"><span>YOUR EVERYDAY, ORGANIZED</span><strong>Hello, {INITIAL_USER_STUDENT.name.split(' ')[0]}.</strong><p>Let’s make it a good day.</p></div>
@@ -106,8 +106,8 @@ export function PublicLandingPage({ onNavigate, onExploreRole }: Props) {
         <div className="pl-role-grid">{[{role:'student' as UserRole,icon:GraduationCap,title:'For students',text:'More clarity for your classes. Less friction in your day.',items:['Academic progress & schedules','Document requests & campus services','AI support & offer analysis']},{role:'faculty' as UserRole,icon:Users,title:'For faculty',text:'Keep academic life and campus conversations in view.',items:['Course & attendance information','Grievance conversations','Campus notices & feedback']},{role:'admin' as UserRole,icon:BarChart3,title:'For administrators',text:'See the bigger picture. Find where your campus needs you.',items:['Institution overview & reports','Request & grievance tracking','Feedback & service insights']}].map(({role,icon:Icon,title,text,items}) => <article className="pl-role" key={role} onPointerMove={tiltCard} onPointerLeave={resetTilt}><RoleEmblem role={role}/><span className="pl-role-label"><Icon size={15}/>{role === 'admin' ? 'CAMPUS INTELLIGENCE' : role === 'faculty' ? 'TEACHING, CONNECTED' : 'YOUR PERSONAL WORKSPACE'}</span><h3>{title}</h3><p>{text}</p><ul>{items.map(item => <li key={item}><Check size={14}/>{item}</li>)}</ul><button onClick={() => onExploreRole(role)}>Explore {role === 'admin' ? 'admin' : role} view <ArrowUpRight size={17}/></button></article>)}</div>
       </section>
       <section className="pl-faq-section"><div className="pl-container pl-faq-grid"><div><p className="pl-kicker">GOOD QUESTIONS. CLEAR ANSWERS.</p><h2>A few things<br/>you might wonder.</h2><p>Get to know the workspace before you jump in.</p></div><div className="pl-faq-list">{questions.map(([question,answer]) => <details key={question}><summary>{question}<Plus size={18} aria-hidden="true"/></summary><p>{answer}</p></details>)}</div></div></section>
-      <section className="pl-container pl-closing"><p className="pl-kicker">YOUR NEXT CHAPTER STARTS HERE</p><h2>Make campus life<br/>a little <span>lighter.</span></h2><button className="pl-button pl-button-dark" onClick={() => onExploreRole('student')}>Step inside Campus360 <ArrowRight size={18}/></button><p>Explore the demo. Find your flow.</p></section>
+      <section className="pl-container pl-closing"><p className="pl-kicker">YOUR NEXT CHAPTER STARTS HERE</p><h2>Make campus life<br/>a little <span>lighter.</span></h2><button className="pl-button pl-button-dark" onClick={() => onExploreRole('student')}>Step inside Yukti AI <ArrowRight size={18}/></button><p>Explore the demo. Find your flow.</p></section>
     </main>
-    <footer className="pl-footer"><div className="pl-container"><div><span className="pl-brand"><GraduationCap size={24}/> campus360.</span><p>A little less admin. A lot more campus.</p></div><nav aria-label="Footer"><button onClick={() => scrollTo('pl-platform')}>Platform</button><button onClick={() => onNavigate('promisecheck')}>PromiseCheck</button><button onClick={() => onNavigate('overview')}>Dashboard <ArrowUpRight size={14}/></button></nav></div><div className="pl-container pl-footer-bottom"><span>© {new Date().getFullYear()} Campus360</span><span>Demo workspace · Sample campus records</span><span>Thoughtfully connected.</span></div></footer>
+    <footer className="pl-footer"><div className="pl-container"><div><span className="pl-brand"><GraduationCap size={24}/> yukti ai.</span><p>A little less admin. A lot more campus.</p></div><nav aria-label="Footer"><button onClick={() => scrollTo('pl-platform')}>Platform</button><button onClick={() => onNavigate('promisecheck')}>PromiseCheck</button><button onClick={() => onNavigate('overview')}>Dashboard <ArrowUpRight size={14}/></button></nav></div><div className="pl-container pl-footer-bottom"><span>© {new Date().getFullYear()} Yukti AI</span><span>Demo workspace · Sample campus records</span><span>Thoughtfully connected.</span></div></footer>
   </div>;
 }

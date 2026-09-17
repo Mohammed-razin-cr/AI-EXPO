@@ -30,7 +30,7 @@ export function CampusNavigation({ tabs, activeTab, onNavigate, onOpenAssistant 
         <button onClick={() => { onNavigate(id); setOpen(false); }} aria-current={id === activeTab ? 'page' : undefined}><Icon size={18} aria-hidden="true"/><span>{label}</span>{id === 'promisecheck' && <small>AI</small>}</button>
       </React.Fragment>)}</div>
       <div className="sidebar-help"><Sparkles size={21}/><strong>A helping hand,<br/>whenever you need it.</strong><p>Find answers with your campus assistant.</p><button onClick={() => {setOpen(false); onOpenAssistant();}}>Let’s talk <ArrowUpRight size={16}/></button></div>
-      <span className="sidebar-bottom">CAMPUS360 <span>·</span> YOUR EVERYDAY EDGE</span>
+      <span className="sidebar-bottom">YUKTI AI <span>·</span> YOUR EVERYDAY EDGE</span>
     </nav>
   </>;
 }

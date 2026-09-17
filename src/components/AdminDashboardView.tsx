@@ -13,13 +13,17 @@ import {
   ChevronRight,
   Download
 } from 'lucide-react';
-import { SmartComplaint, DocumentRequest, FeedbackItem, UserProfile } from '../types';
+import { requestAI } from '../lib/localDemo';
+import { HostelPass, SmartComplaint, DocumentRequest, FeedbackItem, UserProfile } from '../types';
 
 interface AdminDashboardViewProps {
   user: UserProfile;
   complaints: SmartComplaint[];
   documents: DocumentRequest[];
   feedback: FeedbackItem[];
+  passes: HostelPass[];
+  onUpdatePass: (id:string,status:HostelPass['status'])=>void;
+  onUpdateDocument: (id:string,status:DocumentRequest['status'])=>void;
   onUpdateComplaintStatus: (id: string, status: SmartComplaint['status']) => void;
 }
 
@@ -29,7 +33,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   documents,
   feedback,
   onUpdateComplaintStatus,
+  passes, onUpdatePass, onUpdateDocument,
 }) => {
+  const [reportError,setReportError] = useState('');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [aiReport, setAiReport] = useState<{
     report: string;
@@ -38,59 +44,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   } | null>(null);
 
   const totalComplaints = complaints.length;
-  const openComplaints = complaints.filter((c) => c.status === 'open' || c.status === 'investigating').length;
+  const openComplaints = complaints.filter((c) => c.status !== 'resolved').length;
   const resolvedComplaints = complaints.filter((c) => c.status === 'resolved').length;
   const readyDocuments = documents.filter((d) => d.status === 'ready').length;
 
   const handleGenerateAiReport = async () => {
     setIsGeneratingReport(true);
     try {
-      const response = await fetch('/api/admin/generate-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stats: {
-            totalStudents: 4820,
-            openComplaints,
-            resolvedComplaints,
-            readyDocuments,
-            avgResolutionHours: 14.2
-          },
-          complaintsSummary: complaints.map((c) => ({
-            title: c.title,
-            category: c.category,
-            urgency: c.urgency,
-            status: c.status
-          })),
-          docRequestsSummary: documents.map((d) => ({
-            type: d.type,
-            status: d.status,
-            urgency: d.urgency
-          })),
-          feedbackSummary: feedback.map((f) => ({
-            target: f.targetName,
-            rating: f.rating,
-            sentiment: f.sentiment
-          }))
-        })
-      });
-
-      const data = await response.json();
+      setReportError('');setAiReport(null);
+      const data=await requestAI('/api/admin/generate-report',{stats:{totalComplaints,openComplaints,resolvedComplaints,readyDocuments,totalDocuments:documents.length,feedbackCount:feedback.length},complaintsSummary:complaints.map(c=>({title:c.title,category:c.category,urgency:c.urgency,status:c.status})),docRequestsSummary:documents.map(d=>({type:d.type,status:d.status,urgency:d.urgency})),feedbackSummary:feedback.map(f=>({target:f.targetName,rating:f.rating,sentiment:f.sentiment}))});
       setAiReport(data);
     } catch (err) {
-      setAiReport({
-        report: `### Executive Campus Health & Grievance Digest
-- **Grievance Resolution**: Average turnaround time stands at 14.2 hours, down by 18% from last week.
-- **Top Bottlenecks**: Wi-Fi latency in Block-B Hostel and Mess dinner feedback require warden attention.
-- **Document Services**: 94% of Bonafide and Transcript applications were processed within the 24-hour SLA.
-- **Safety & Scams Alert**: 12 students ran PromiseCheck audits on off-campus training institutes; 4 high-risk predatory loans were flagged and avoided.`,
-        healthScore: 88,
-        actionItems: [
-          'Deploy auxiliary mesh Wi-Fi APs to Falcon Hall Block-B 3rd floor.',
-          'Audit Mess supplier grain and oil quality with student mess committee.',
-          'Host PromiseCheck career awareness session before campus placement season.'
-        ]
-      });
+      setReportError(err instanceof Error?err.message:'Report generation failed.');
     } finally {
       setIsGeneratingReport(false);
     }
@@ -98,6 +63,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {reportError && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{reportError}</p>}
+      <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4" aria-label="Local demo approvals">
+        <h2 className="font-bold text-lg">Local demo approvals</h2><p className="text-sm text-slate-600">Switch to the administrator role to advance documents or review outpasses. These changes affect this browser only.</p>
+        {user.role === 'admin' ? <><h3 className="font-semibold">Document queue</h3>{documents.map(doc=><label key={doc.id} className="flex flex-wrap items-center justify-between gap-3 text-sm border-b border-slate-100 py-3"><span>{doc.title} · {doc.refCode}</span><select className="min-h-11 border rounded-lg px-3" aria-label={'Status for '+doc.refCode} value={doc.status} onChange={e=>onUpdateDocument(doc.id,e.target.value as DocumentRequest['status'])}>{['submitted','under_review','hod_approved','ready','rejected'].map(status=><option key={status} value={status}>{status.replaceAll('_',' ')}</option>)}</select></label>)}<h3 className="font-semibold">Outpass queue</h3>{passes.map(pass=><label key={pass.id} className="flex flex-wrap items-center justify-between gap-3 text-sm border-b border-slate-100 py-3"><span>{pass.destination} · {pass.passNo}</span><select className="min-h-11 border rounded-lg px-3" aria-label={'Status for '+pass.passNo} value={pass.status} onChange={e=>onUpdatePass(pass.id,e.target.value as HostelPass['status'])}>{['pending','approved','rejected'].map(status=><option key={status}>{status}</option>)}</select></label>)}</> : <p className="text-sm">Administrator role required for demo approval controls.</p>}
+      </section>
       {/* Header Banner */}
       <div className="neo-card bg-[#FFFDF9] border-2 border-slate-900 rounded-2xl p-6 sm:p-7 shadow-[5px_5px_0px_#0f172a] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -137,20 +107,20 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3.5px_3.5px_0px_#0f172a] space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-600 font-black uppercase">
-            <span>Enrolled Students</span>
+            <span>Feedback received</span>
             <Users className="w-4 h-4 text-slate-950 stroke-[2.5]" />
           </div>
-          <div className="text-3xl font-black text-slate-950 font-mono">4,820</div>
-          <p className="text-[11px] text-emerald-800 font-bold">99.1% Active Bio-Attendance</p>
+          <div className="text-3xl font-black text-slate-950 font-mono">{feedback.length}</div>
+          <p className="text-[11px] text-emerald-800 font-bold">From local demo records</p>
         </div>
 
         <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3.5px_3.5px_0px_#0f172a] space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-600 font-black uppercase">
-            <span>Avg Grievance SLA</span>
+            <span>Resolution rate</span>
             <Clock className="w-4 h-4 text-slate-950 stroke-[2.5]" />
           </div>
-          <div className="text-3xl font-black text-slate-950 font-mono">14.2 hrs</div>
-          <p className="text-[11px] text-emerald-800 font-bold">18% faster than target SLA</p>
+          <div className="text-3xl font-black text-slate-950 font-mono">{complaints.length ? Math.round(resolvedComplaints / complaints.length * 100) : 0}%</div>
+          <p className="text-[11px] text-emerald-800 font-bold">{resolvedComplaints} of {totalComplaints} tickets resolved</p>
         </div>
 
         <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3.5px_3.5px_0px_#0f172a] space-y-1">
@@ -159,7 +129,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <FileCheck className="w-4 h-4 text-slate-950 stroke-[2.5]" />
           </div>
           <div className="text-3xl font-black text-slate-950 font-mono">{readyDocuments} / {documents.length}</div>
-          <p className="text-[11px] text-slate-600 font-bold">94% automated zero-paper issuance</p>
+          <p className="text-[11px] text-slate-600 font-bold">{readyDocuments} of {documents.length} demo documents ready</p>
         </div>
 
         <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3.5px_3.5px_0px_#0f172a] space-y-1">

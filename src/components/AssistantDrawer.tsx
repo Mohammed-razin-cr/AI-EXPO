@@ -12,12 +12,14 @@ import {
   RotateCcw,
   Languages
 } from 'lucide-react';
+import { requestAI } from '../lib/localDemo';
 import { UserProfile } from '../types';
 
 interface AssistantDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserProfile;
+  campusContext?: Record<string,unknown>;
   currentLanguage: string;
   onChangeLanguage: (lang: string) => void;
   onNavigateTab: (tab: string) => void;
@@ -34,6 +36,7 @@ export const AssistantDrawer: React.FC<AssistantDrawerProps> = ({
   isOpen,
   onClose,
   user,
+  campusContext,
   currentLanguage,
   onChangeLanguage,
   onNavigateTab
@@ -141,26 +144,8 @@ export const AssistantDrawer: React.FC<AssistantDrawerProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: textToSend,
-          language: currentLanguage,
-          conversationHistory: messages,
-          userContext: {
-            name: user.name,
-            rollNo: user.rollNo,
-            dept: user.department,
-            year: user.year,
-            hostel: user.hostelBlock
-          }
-        })
-      });
-
-      const data = await response.json();
-      const reply = data.reply || "I am here to assist with campus requests, academic info, or PromiseCheck claims.";
-      
+      const data = await requestAI('/api/assistant',{message:textToSend,language:currentLanguage,conversationHistory:messages,userContext:{name:user.name,rollNo:user.rollNo,dept:user.department,year:user.year,hostel:user.hostelBlock,...campusContext}});
+      const reply = data.reply;
       const assistantMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
@@ -174,7 +159,7 @@ export const AssistantDrawer: React.FC<AssistantDrawerProps> = ({
       const fallbackMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
-        text: "I experienced a connection hitch, but as your Campus Assistant: you can download Bonafides in 'Documents', submit grievances under 'Complaints', or audit suspicious coaching ads with 'PromiseCheck AI'!",
+        text: err instanceof Error ? err.message : 'AI request failed. Please retry.',
         timestamp: 'Just now'
       };
       setMessages((prev) => [...prev, fallbackMsg]);

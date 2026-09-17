@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useLocalDemoState } from './lib/localDemo';
+import { LocalDemoStatus } from './components/LocalDemoStatus';
 import {
   GraduationCap,
   ShieldCheck,
@@ -92,14 +94,14 @@ export default function App() {
   // Application Data States
   const [courses] = useState<AcademicCourse[]>(SAMPLE_COURSES);
   const [timetable] = useState<TimetableSlot[]>(SAMPLE_TIMETABLE);
-  const [documents, setDocuments] = useState<DocumentRequest[]>(SAMPLE_DOCUMENTS);
-  const [complaints, setComplaints] = useState<SmartComplaint[]>(SAMPLE_COMPLAINTS);
-  const [passes, setPasses] = useState<HostelPass[]>(SAMPLE_HOSTEL_PASSES);
+  const [documents, setDocuments] = useLocalDemoState<DocumentRequest[]>('documents',SAMPLE_DOCUMENTS);
+  const [complaints, setComplaints] = useLocalDemoState<SmartComplaint[]>('complaints',SAMPLE_COMPLAINTS);
+  const [passes, setPasses] = useLocalDemoState<HostelPass[]>('passes',SAMPLE_HOSTEL_PASSES);
   const [messMenu] = useState<MessMenuDay[]>(SAMPLE_MESS_MENU);
   const [announcements] = useState<CampusAnnouncement[]>(SAMPLE_ANNOUNCEMENTS);
-  const [notifications, setNotifications] = useState<CampusNotification[]>(SAMPLE_NOTIFICATIONS);
-  const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>(SAMPLE_FEEDBACK);
-  const [campusFindItems, setCampusFindItems] = useState<CampusFindItem[]>(SAMPLE_CAMPUS_FIND_ITEMS);
+  const [notifications, setNotifications] = useLocalDemoState<CampusNotification[]>('notifications',SAMPLE_NOTIFICATIONS);
+  const [feedbackList, setFeedbackList] = useLocalDemoState<FeedbackItem[]>('feedback',SAMPLE_FEEDBACK);
+  const [campusFindItems, setCampusFindItems] = useLocalDemoState<CampusFindItem[]>('campusfind',SAMPLE_CAMPUS_FIND_ITEMS);
 
   // Role Switcher
   const handleSwitchRole = (role: UserRole) => {
@@ -260,6 +262,7 @@ export default function App() {
 
       {/* Main Viewport */}
       <main id="main-content" className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <LocalDemoStatus />
         {activeTab === 'overview' && (
           <LandingPageView
             onNavigate={(tab) => setActiveTab(tab)}
@@ -345,6 +348,9 @@ export default function App() {
             complaints={complaints}
             documents={documents}
             feedback={feedbackList}
+            passes={passes}
+            onUpdatePass={(id,status) => setPasses(previous => previous.map(pass => pass.id === id ? {...pass,status} : pass))}
+            onUpdateDocument={(id,status) => setDocuments(previous => previous.map(doc => doc.id === id ? {...doc,status,timeline:doc.timeline.map((step,index) => {const stage = ['submitted','under_review','hod_approved','ready'].indexOf(status);return {...step,status:index <= stage ? 'done' : index === stage+1 ? 'current' : 'pending',date:index<=stage?'Updated in local demo':'Pending'};})} : doc))}
             onUpdateComplaintStatus={handleUpdateComplaintStatus}
           />
         )}
@@ -354,12 +360,12 @@ export default function App() {
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-600">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-slate-900">Campus360 AI</span>
+            <span className="font-extrabold text-slate-900">Yukti AI</span>
             <span className="text-slate-300">•</span>
             <span>Built for student success</span>
           </div>
           <p className="text-[11px] font-semibold text-slate-400">
-            Secure campus services • Powered by Google Gemini
+            Local demo • Gemini, Groq & local MiniLM
           </p>
         </div>
       </footer>
@@ -369,6 +375,7 @@ export default function App() {
         isOpen={isAssistantOpen}
         onClose={() => setIsAssistantOpen(false)}
         user={currentUser}
+        campusContext={{courses,timetable,documents:documents.map(d=>({title:d.title,status:d.status})),complaints:complaints.map(c=>({title:c.title,status:c.status})),passes:passes.map(p=>({destination:p.destination,status:p.status})),messMenu,announcements}}
         currentLanguage={currentLanguage}
         onChangeLanguage={setCurrentLanguage}
         onNavigateTab={(tab) => {

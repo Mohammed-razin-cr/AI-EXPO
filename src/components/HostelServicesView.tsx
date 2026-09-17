@@ -32,7 +32,7 @@ export const HostelServicesView: React.FC<HostelServicesViewProps> = ({ user, pa
     if (new Date(outDate).getTime() <= Date.now()) { setError('Departure must be in the future.'); return; }
     if (new Date(inDate).getTime() <= new Date(outDate).getTime()) { setError('Return must be after your departure.'); return; }
     const passNo = 'GP-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-6);
-    onRequestPass({ id: 'pass-' + Date.now(), passNo, studentName: user.name, rollNo: user.rollNo, roomNo: user.roomNo || 'Not assigned', reason: reason.trim(), destination: destination.trim(), outDate, inDate, status:'approved', wardenRemarks:'Auto-approved for this demo. Not valid for campus gate entry.', qrPayload:'' });
+    onRequestPass({ id: 'pass-' + Date.now(), passNo, studentName: user.name, rollNo: user.rollNo, roomNo: user.roomNo || 'Not assigned', reason: reason.trim(), destination: destination.trim(), outDate, inDate, status:'pending', wardenRemarks:'Awaiting review in the local demo Admin queue. Not valid for campus gate entry.', qrPayload:'' });
     setShowPassModal(false); setReason(''); setDestination(''); setOutDate(''); setInDate(''); setFilter('all'); setActiveTab('outpass'); setError('');
     setNotice('Your demo outpass has been created. View its details below.');
   };
@@ -74,7 +74,7 @@ export const HostelServicesView: React.FC<HostelServicesViewProps> = ({ user, pa
       </div>
     </section>}
     {showPassModal && <ServiceDialog title="Request an outpass" onClose={() => setShowPassModal(false)}><form className="service-form" onSubmit={createPass}>
-      <p>Add your trip details. This demo creates an automatically approved sample pass, not a real warden authorization.</p>
+      <p>Add your trip details. Review this request in the demo Admin outpass queue. This is not a real warden authorization.</p>
       <label>Destination<input required autoComplete="off" value={destination} onChange={e => setDestination(e.target.value)} placeholder="Where are you going?"/></label>
       <label>Reason for travel<textarea required value={reason} onChange={e => setReason(e.target.value)} placeholder="Briefly describe the purpose of your visit."/></label>
       <div className="service-form-row"><label>Departure<input type="datetime-local" required value={outDate} onChange={e => {setOutDate(e.target.value);setError('');}}/></label><label>Return by<input type="datetime-local" required value={inDate} min={outDate || undefined} onChange={e => {setInDate(e.target.value);setError('');}}/></label></div>

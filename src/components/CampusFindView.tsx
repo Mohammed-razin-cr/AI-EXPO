@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Eye
 } from 'lucide-react';
+import { requestAI } from '../lib/localDemo';
 import { CampusFindItem, CampusFindType, CampusFindCategory, UserProfile } from '../types';
 
 interface CampusFindViewProps {
@@ -30,6 +31,13 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
   onAddItem,
   onUpdateItemStatus
 }) => {
+  const [matchState,setMatchState] = useState<{loading:boolean,error:string,matches:{matchedItemId:string,confidence:number,reason:string}[]}>({loading:false,error:'',matches:[]});
+  const [matchingFor,setMatchingFor] = useState('');
+  const findMatches = async (item:CampusFindItem) => {
+    setMatchingFor(item.title); setMatchState({loading:true,error:'',matches:[]});
+    try { const data = await requestAI('/api/campus-find/match',{newItem:item,existingItems:items.slice(0,100)}); setMatchState({loading:false,error:'',matches:data.matches}); }
+    catch(error) { setMatchState({loading:false,error:error instanceof Error?error.message:'Matching failed.',matches:[]}); }
+  };
   const [filterType, setFilterType] = useState<'all' | 'lost' | 'found'>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +74,7 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 512*1024) { setMatchState({loading:false,error:'Use a JPEG, PNG or WebP image under 512 KB for browser storage.',matches:[]}); return; }
     const reader = new FileReader();
     reader.onload = () => {
       setFormImage(reader.result as string);
@@ -93,6 +102,7 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
     };
 
     onAddItem(newItem);
+    void findMatches(newItem);
     setShowReportModal(false);
     // Reset Form
     setFormTitle('');
@@ -105,9 +115,9 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
     e.preventDefault();
     if (!selectedItemForClaim) return;
 
-    if (enteredClaimCode.trim().toUpperCase() === selectedItemForClaim.claimCode.toUpperCase() || enteredClaimCode.trim() === 'VERIFY') {
+    if (enteredClaimCode.trim().toUpperCase() === selectedItemForClaim.claimCode.toUpperCase()) {
       onUpdateItemStatus(selectedItemForClaim.id, 'returned');
-      setClaimFeedback('Success! Item ownership verified and handover logged.');
+      setClaimFeedback('Handover recorded in this local demo. A claim code does not independently prove ownership.');
       setTimeout(() => {
         setSelectedItemForClaim(null);
         setClaimFeedback(null);
@@ -120,6 +130,8 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {matchingFor && <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-3" aria-label="Matching results"><h2 className="font-bold">Possible matches for {matchingFor}</h2><p className="text-xs">Local MiniLM semantic similarity—not proof of ownership.</p>{matchState.loading ? <p role="status">Comparing item descriptions…</p> : matchState.matches.length ? matchState.matches.map(match=><p key={match.matchedItemId}>{items.find(item=>item.id===match.matchedItemId)?.title} · {match.confidence}% similarity<br/><small>{match.reason}</small></p>) : <p>No likely matches found.</p>}</section>}
+      {matchState.error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{matchState.error}</p>}
       {/* Header Banner */}
       <div className="neo-card bg-[#FFFDF9] border-2 border-slate-900 rounded-2xl p-6 sm:p-7 shadow-[5px_5px_0px_#0f172a] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -303,6 +315,7 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
                     </div>
                   </div>
 
+                  <button disabled={matchState.loading} className="min-h-11 rounded-lg border border-slate-200 text-sm px-3 disabled:opacity-50" onClick={()=>findMatches(item)}>Find possible matches</button>
                   {/* Actions */}
                   <div className="pt-2 flex items-center justify-between border-t-2 border-slate-100">
                     <span className="text-[10px] font-mono font-bold text-slate-600">
@@ -315,7 +328,7 @@ export const CampusFindView: React.FC<CampusFindViewProps> = ({
                         className="neo-btn bg-yellow-300 hover:bg-yellow-400 text-slate-950 text-xs px-3 py-1.5 font-black shadow-[2px_2px_0px_#0f172a] flex items-center gap-1"
                       >
                         <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
-                        Verify / Claim
+                        Record handover
                       </button>
                     ) : (
                       <span className="text-xs font-black text-emerald-700 flex items-center gap-1">

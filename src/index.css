@@ -148,9 +148,9 @@
 }
 @media(max-width:699px) {
   .campus-app > header > div { padding: 0 16px; gap: 8px; }
-  .campus-app > header button[aria-label="Go to Campus360 overview"] { gap: 8px; flex-shrink: 0; }
-  .campus-app > header button[aria-label="Go to Campus360 overview"] > span:last-child > span > span:first-child { font-size: 15px; }
-  .campus-app > header button[aria-label="Go to Campus360 overview"] > span:last-child > span > span:last-child { display: none; }
+  .campus-app > header button[aria-label="Go to Yukti AI overview"] { gap: 8px; flex-shrink: 0; }
+  .campus-app > header button[aria-label="Go to Yukti AI overview"] > span:last-child > span > span:first-child { font-size: 15px; }
+  .campus-app > header button[aria-label="Go to Yukti AI overview"] > span:last-child > span > span:last-child { display: none; }
   .header-controls { gap: 3px; }
   .header-controls button[aria-label^="Language"] { width: 36px; border: 0; }
   .header-controls button[aria-label*="unread"] { width: 36px; border: 0; }

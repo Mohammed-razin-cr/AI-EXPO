@@ -66,16 +66,16 @@ export const ComplaintManagementView: React.FC<ComplaintManagementViewProps> = (
 
     setIsTriaging(true);
     let aiTriageResult = {
-      department: selectedCategory === 'hostel' ? 'Hostel Warden Office' : selectedCategory === 'mess' ? 'Catering Committee' : 'Campus IT Operations',
+      department: ({hostel:'Hostel Office',mess:'Catering Committee',it:'Campus IT',academic:'Academic Office',cleanliness:'Housekeeping',other:'Campus Support'})[selectedCategory],
       estimatedHours: 12,
-      severityReason: 'Automated campus triage assignment',
-      suggestedFix: 'Assigned duty technician with priority tracking.'
+      severityReason: 'Local rule-based routing suggestion',
+      suggestedFix: 'Review with the responsible team. No technician has been dispatched.'
     };
     let urgencyLevel: ComplaintUrgency = 'medium';
 
     try {
       const response = await fetch('/api/smart-triage', {
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(60000),
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

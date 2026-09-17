@@ -48,13 +48,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/90 bg-white/95 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <button onClick={() => onSelectTab('landing')} className="group flex min-w-0 items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100" aria-label="Go to Campus360 overview">
+        <button onClick={() => onSelectTab('landing')} className="group flex min-w-0 items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100" aria-label="Go to Yukti AI overview">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#183153] text-white shadow-sm transition-transform group-hover:-translate-y-0.5">
             <GraduationCap className="h-5 w-5" aria-hidden="true" />
           </span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
-              <span className="truncate text-[17px] font-extrabold tracking-tight text-slate-950">Campus360</span>
+              <span className="truncate text-[17px] font-extrabold tracking-tight text-slate-950">Yukti AI</span>
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold tracking-wide text-emerald-800">AI HUB</span>
             </span>
             <span className="hidden truncate text-[11px] font-semibold text-slate-500 sm:block">Student success, in one place</span>

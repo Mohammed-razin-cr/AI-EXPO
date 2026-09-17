@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   RefreshCw
 } from 'lucide-react';
+import { requestAI } from '../lib/localDemo';
 import { PromiseCheckResult } from '../types';
 import { SAMPLE_PROMISE_CHECK_PRESETS } from '../data/mockData';
 
@@ -25,6 +26,8 @@ export const PromiseCheckView: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [mimeType, setMimeType] = useState('image/jpeg');
+  const [error,setError] = useState('');
+  const [source,setSource] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState<'verifiable' | 'vague' | 'missing' | 'financial' | 'questions'>('verifiable');
   const [result, setResult] = useState<PromiseCheckResult | null>(null);
@@ -32,6 +35,7 @@ export const PromiseCheckView: React.FC = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 5*1024*1024) { setError('Choose a JPEG, PNG or WebP image under 5 MB.'); return; }
 
     setMimeType(file.type);
     const reader = new FileReader();
@@ -58,49 +62,11 @@ export const PromiseCheckView: React.FC = () => {
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch('/api/promise-check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rawText: adText,
-          imageBase64: imageBase64,
-          mimeType: mimeType,
-          instituteName: instituteName || 'Coaching Institute / Job Program'
-        })
-      });
-
-      const data = await response.json();
-      setResult(data);
+      setError(''); setResult(null);
+      const data = await requestAI('/api/promise-check',{rawText:adText,imageBase64,mimeType,instituteName});
+      setResult(data); setSource(data.provider + ' · ' + data.model);
     } catch (err) {
-      console.error('PromiseCheck error:', err);
-      // Fallback display
-      setResult({
-        overallRiskScore: 84,
-        riskLevel: 'High Financial Risk',
-        verifiableClaims: [
-          { claim: '100% Placement Guaranteed or 100% Refund', verdict: 'Exaggerated', reason: 'Fine print usually attaches 99% attendance conditions and mandatory relocation clauses to void the refund.' },
-          { claim: 'Govt Approved Curriculum', verdict: 'Unsubstantiated', reason: 'No registered accreditation ID or official board notification cited.' }
-        ],
-        vagueMarketingLanguage: [
-          { phrase: 'Average Package $120,000 / ₹18 LPA Guaranteed', whyVague: 'Calculated using extreme outliers or pre-experienced candidates rather than true batch median.', industryReality: 'Median fresh graduate packages rarely exceed ₹4-6 LPA.' },
-          { phrase: 'Zero Cost EMI Available', whyVague: 'Disguises a personal NBFC debt liability as an installment plan.', industryReality: 'Finance companies charge interest directly to the institute or impose high foreclosure penalties.' },
-          { phrase: 'Only 3 Seats Remaining', whyVague: 'Manufactured urgency to pressure immediate deposit.', industryReality: 'Batches run on continuous admissions rolling cycles.' }
-        ],
-        missingEvidence: [
-          { missingItem: 'Audited Placement Report with verifiable student LinkedIn profiles and recruiters', whyCritical: 'Prevents independent verification of alumni career trajectories.' },
-          { missingItem: 'Full Master Service Agreement & Loan Cancellation Policy', whyCritical: 'Critical before signing any authorization or sharing Aadhaar/SSN.' }
-        ],
-        financialRiskIndicators: [
-          { riskFactor: 'Third-party NBFC Education Loan disguised as EMI', redFlagLevel: 'Critical', breakdown: 'If you drop out or find the teaching poor, your credit score is still burdened by the bank.' },
-          { riskFactor: 'Upfront Non-refundable Seat Blocking Fee (₹10,000+)', redFlagLevel: 'High', breakdown: 'Immediate forfeiture if you decide not to proceed after seeing the actual agreement.' }
-        ],
-        questionsToAsk: [
-          { question: 'What exact percentage of students in the immediate past batch secured jobs meeting the advertised package?', targetToAsk: 'Admissions Director', whatToLookFor: 'Should provide a verifiable report, not vague anecdotes.' },
-          { question: 'Is this installment plan managed by an NBFC banking partner in my name?', targetToAsk: 'Finance Office', whatToLookFor: 'Insist on seeing the loan agreement sample before sharing OTP or KYC.' },
-          { question: 'What specific conditions disqualify a candidate from the 100% refund policy?', targetToAsk: 'Placement Coordinator', whatToLookFor: 'Inspect clauses regarding mock tests, attendance, and rejected interviews.' }
-        ],
-        summaryDecisionSupport: 'PromiseCheck AI strongly advises against immediate payment. The offer exhibits high financial risk patterns typical of predatory ed-tech marketing. Request a full copy of the student agreement, loan terms, and alumni contacts before transferring any money.'
-      });
+      setResult(null); setError(err instanceof Error ? err.message : 'Analysis failed. Please retry.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -114,6 +80,8 @@ export const PromiseCheckView: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+      {result && <p className="text-xs text-slate-600">Generated by {source}. Textual risk indicators, not verified fraud findings. No web verification performed.</p>}
       {/* Header Banner */}
       <div className="neo-card bg-[#FFFDF9] border-2 border-slate-900 rounded-2xl p-6 sm:p-8 shadow-[5px_5px_0px_#0f172a] relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   Plus,
@@ -13,6 +13,8 @@ import {
   Sparkles,
   QrCode
 } from 'lucide-react';
+import { createDemoDocument } from '../lib/demoDocument';
+import { ServiceDialog } from './ServiceUI';
 import { DocumentRequest, DocumentType, UserProfile } from '../types';
 
 interface DocumentRequestViewProps {
@@ -26,11 +28,20 @@ export const DocumentRequestView: React.FC<DocumentRequestViewProps> = ({
   user,
   onRequestNew,
 }) => {
+  const [pdfUrl,setPdfUrl] = useState('');
+  const [downloadError,setDownloadError] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
   const [selectedType, setSelectedType] = useState<DocumentType>('bonafide');
   const [purpose, setPurpose] = useState('');
   const [isExpress, setIsExpress] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<DocumentRequest | null>(null);
+
+  useEffect(() => {
+    let disposed=false; let url='';
+    setPdfUrl(''); setDownloadError('');
+    if(previewDoc) createDemoDocument(previewDoc).then(blob=>{if(disposed)return;url=URL.createObjectURL(blob);setPdfUrl(url);}).catch(()=>{if(!disposed)setDownloadError('Could not generate PDF. Close and reopen to retry.');});
+    return ()=>{disposed=true;if(url)URL.revokeObjectURL(url);};
+  },[previewDoc]);
 
   const handleCreateRequest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +71,7 @@ export const DocumentRequestView: React.FC<DocumentRequestViewProps> = ({
         { title: 'Application Submitted', date: 'Just now', status: 'done', desc: 'Lodge received in registrar queue.' },
         { title: 'Academic Record Clearance', date: 'Pending', status: 'current', desc: 'Verifying course enrollment and fee receipts.' },
         { title: 'HOD Digital Seal', date: 'Pending', status: 'pending', desc: 'Authorization signature from department head.' },
-        { title: 'Document Ready', date: 'Pending', status: 'pending', desc: 'Official watermarked PDF with verifiable QR code.' }
+        { title: 'Document Ready', date: 'Pending', status: 'pending', desc: 'Downloadable sample PDF. Not institutionally verified.' }
       ],
       verifierRemarks: 'Application queued for automated eligibility check.'
     };
@@ -91,6 +102,7 @@ export const DocumentRequestView: React.FC<DocumentRequestViewProps> = ({
             <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" /> HOD Signed
           </span>
         );
+      case 'rejected': return <span className="text-sm text-red-700 font-semibold">Rejected in demo review</span>;
       default:
         return (
           <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 text-slate-950 border border-slate-900 shadow-[1px_1px_0px_#0f172a] flex items-center gap-1">
@@ -113,7 +125,7 @@ export const DocumentRequestView: React.FC<DocumentRequestViewProps> = ({
             Document Request &amp; Status Tracking
           </h1>
           <p className="text-xs sm:text-sm text-slate-700 font-medium max-w-xl mt-1 leading-relaxed">
-            Apply for Bonafide certificates, official transcripts, and campus passes with real-time verification tracking and instant QR download.
+            Request sample campus documents, advance approvals in the demo Admin view, and download a PDF when ready.
           </p>
         </div>
 
@@ -159,7 +171,7 @@ export const DocumentRequestView: React.FC<DocumentRequestViewProps> = ({
                     className="neo-btn bg-yellow-300 hover:bg-yellow-400 text-slate-950 text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5 shadow-[2px_2px_0px_#0f172a]"
                   >
                     <Eye className="w-3.5 h-3.5 stroke-[2.5]" />
-                    View &amp; Print
+                    View &amp; Download
                   </button>
                 )}
               </div>
@@ -291,103 +303,8 @@ export const DocumentRequestView: React.FC<DocumentRequestViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Official Digital Document Preview */}
-      {previewDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="neo-card bg-white border-2 border-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-[8px_8px_0px_#0f172a] text-slate-950 flex flex-col max-h-[90vh]">
-            <div className="p-4 border-b-2 border-slate-900 flex items-center justify-between bg-yellow-50">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-slate-950 stroke-[2.5]" />
-                <h3 className="font-black text-sm text-slate-950">Digital Document Viewer</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => window.print()}
-                  className="neo-btn bg-yellow-300 hover:bg-yellow-400 text-slate-950 text-xs px-3.5 py-1.5 font-black flex items-center gap-1.5 shadow-[2px_2px_0px_#0f172a]"
-                >
-                  <Printer className="w-3.5 h-3.5 stroke-[2.5]" />
-                  Print Official Copy
-                </button>
-                <button
-                  onClick={() => setPreviewDoc(null)}
-                  className="p-1 rounded-lg text-slate-600 hover:text-black"
-                >
-                  <X className="w-5 h-5 stroke-[2.5]" />
-                </button>
-              </div>
-            </div>
+      {previewDoc && <ServiceDialog title="Sample document" onClose={()=>setPreviewDoc(null)}><div className="service-form"><p><strong>Demo only—not an official certificate.</strong> This PDF contains the selected request details, not a registrar signature or verified academic record.</p><h3 className="text-xl font-semibold">{previewDoc.title}</h3><p>{previewDoc.studentName} · {previewDoc.rollNo}<br/>{previewDoc.refCode}<br/>Purpose: {previewDoc.purpose}</p>{downloadError&&<p role="alert">{downloadError}</p>}{pdfUrl ? <a className="service-primary" href={pdfUrl} download={previewDoc.refCode+'-sample.pdf'}><Download size={16}/>Download sample PDF</a> : !downloadError && <p role="status">Preparing your sample PDF…</p>}</div></ServiceDialog>}
 
-            {/* Watermarked Document Sheet */}
-            <div className="p-8 overflow-y-auto bg-slate-100 text-slate-950 flex justify-center">
-              <div className="bg-white p-8 rounded-2xl w-full max-w-xl shadow-[5px_5px_0px_#0f172a] border-2 border-slate-900 relative text-slate-900 space-y-6">
-                {/* Header */}
-                <div className="text-center border-b-2 border-slate-900 pb-4">
-                  <div className="w-12 h-12 mx-auto rounded-xl bg-yellow-300 border-2 border-slate-900 text-slate-950 flex items-center justify-center font-black text-xl mb-2 shadow-[2px_2px_0px_#0f172a]">
-                    CU
-                  </div>
-                  <h2 className="text-lg font-black tracking-tight text-slate-950 font-mono">
-                    CAMPUS UNIVERSITY OF TECHNOLOGY
-                  </h2>
-                  <p className="text-[11px] text-slate-700 uppercase tracking-widest font-black">
-                    Office of the Registrar • Directorate of Academic Affairs
-                  </p>
-                </div>
-
-                {/* Reference Code & Date */}
-                <div className="flex justify-between text-xs text-slate-600 font-mono font-bold">
-                  <span>Ref: {previewDoc.refCode}</span>
-                  <span>Date: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                </div>
-
-                {/* Title */}
-                <div className="text-center my-4">
-                  <h3 className="text-base font-black uppercase tracking-wider text-slate-950 underline underline-offset-4 decoration-2">
-                    {previewDoc.title}
-                  </h3>
-                </div>
-
-                {/* Certificate Body */}
-                <div className="text-xs leading-relaxed text-slate-800 space-y-3 font-medium">
-                  <p>
-                    This is to certify that <strong>{previewDoc.studentName}</strong>, bearing Roll
-                    Number <strong>{previewDoc.rollNo}</strong>, is a bonafide student of this
-                    institution, currently enrolled in the Department of{' '}
-                    <strong>{user.department}</strong>, {user.semester} ({user.year}).
-                  </p>
-                  <p>
-                    According to institutional records, their conduct and academic standing have
-                    remained exemplary with a Cumulative Grade Point Average (CGPA) of{' '}
-                    <strong>{user.cgpa || '8.84'}</strong>.
-                  </p>
-                  <p>
-                    This certificate is issued on specific request for the purpose of:{' '}
-                    <em>“{previewDoc.purpose}”</em>.
-                  </p>
-                </div>
-
-                {/* Signature Block & QR Code */}
-                <div className="pt-6 border-t-2 border-slate-900 flex items-end justify-between">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-slate-50 rounded-xl border-2 border-slate-900 flex flex-col items-center justify-center text-slate-950 font-mono text-[9px] p-1 shadow-[2px_2px_0px_#0f172a]">
-                      <QrCode className="w-12 h-12 text-slate-950 mb-0.5" />
-                      VERIFIED
-                    </div>
-                    <span className="text-[9px] text-slate-600 font-bold block mt-1">Scan to verify</span>
-                  </div>
-
-                  <div className="text-right space-y-1">
-                    <div className="h-9 w-32 border-b-2 border-dashed border-slate-600 ml-auto flex items-end justify-end pr-2 text-xs font-serif italic font-bold text-slate-900">
-                      Dr. Aris Thorne
-                    </div>
-                    <p className="text-xs font-black text-slate-950">Head of Department / Registrar</p>
-                    <p className="text-[10px] text-slate-600 font-bold">Authorized Signatory Seal</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
