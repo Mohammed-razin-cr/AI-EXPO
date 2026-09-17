@@ -1,6 +1,6 @@
 {
   "name": "Yukti AI & PromiseCheck",
-  "description": "Comprehensive AI Campus Intelligence portal with student services, academic records, document requests, smart complaints, hostel services, voice assistant, CampusFind lost & found, and PromiseCheck AI claims analyzer.",
+  "description": "Comprehensive AI Campus Intelligence portal with student services, academic records, document requests, smart complaints, hostel services, voice assistant, CampusFind lost & found, real-time Campus Surveys, and PromiseCheck AI claims analyzer.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

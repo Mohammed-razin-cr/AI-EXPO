@@ -7,6 +7,7 @@ export const STATE_BUCKETS = [
   'notifications',
   'feedback',
   'campusfind',
+  'surveys',
 ] as const;
 
 export type StateBucket = (typeof STATE_BUCKETS)[number];

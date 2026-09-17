@@ -12,6 +12,32 @@ export interface LightThemeOption {
   borderHex: string;
 }
 
+export interface EmergencyContact {
+  name: string;
+  relation: string;
+  phone: string;
+  alternatePhone?: string;
+}
+
+export interface ActiveSession {
+  id: string;
+  device: string;
+  browser: string;
+  ip: string;
+  location: string;
+  lastActive: string;
+  isCurrent: boolean;
+}
+
+export interface SecurityAuditEntry {
+  id: string;
+  action: string;
+  category: 'auth' | 'academic' | 'profile' | 'hostel' | 'system';
+  timestamp: string;
+  ipAddress: string;
+  status: 'success' | 'warning' | 'info';
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -28,6 +54,34 @@ export interface UserProfile {
   currentGpa: number;
   overallAttendance: number;
   phone: string;
+  // Extended Complex Profile Fields
+  degreeProgram?: string;
+  admissionYear?: string;
+  advisor?: string;
+  dateOfBirth?: string;
+  bloodGroup?: string;
+  address?: string;
+  rfidCardNumber?: string;
+  libraryCardNo?: string;
+  academicStanding?: string;
+  creditsCompleted?: number;
+  creditsRequired?: number;
+  clubs?: string[];
+  bio?: string;
+  skills?: string[];
+  emergencyContact?: EmergencyContact;
+  twoFactorEnabled?: boolean;
+  activeSessions?: ActiveSession[];
+  securityAuditLogs?: SecurityAuditEntry[];
+  notificationSettings?: {
+    emailAlerts: boolean;
+    pushAlerts: boolean;
+    smsAlerts: boolean;
+    examDeadlines: boolean;
+    complaintUpdates: boolean;
+    surveyReminders: boolean;
+    hostelPassUpdates: boolean;
+  };
 }
 
 export interface AcademicCourse {
@@ -233,4 +287,40 @@ export interface CampusFindItem {
   claimCode: string;
   matchedItemId?: string;
   matchReason?: string;
+}
+
+export type SurveyCategory = 'academics' | 'dining_hostel' | 'campus_life' | 'facilities' | 'events';
+export type SurveyStatus = 'active' | 'closed';
+
+export interface SurveyOption {
+  id: string;
+  text: string;
+  votes: number;
+}
+
+export interface SurveyVoterRecord {
+  userId: string;
+  userRollNo: string;
+  selectedOptionId: string;
+  timestamp: string;
+  department?: string;
+  year?: string;
+}
+
+export interface CampusSurvey {
+  id: string;
+  title: string;
+  description: string;
+  category: SurveyCategory;
+  createdBy: string;
+  creatorRole: UserRole;
+  publishedAt: string;
+  expiresAt: string;
+  status: SurveyStatus;
+  allowAnonymous: boolean;
+  options: SurveyOption[];
+  totalVotes: number;
+  voters: SurveyVoterRecord[];
+  targetAudience: string;
+  pinned?: boolean;
 }

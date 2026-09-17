@@ -11,7 +11,10 @@ import {
   MessageSquare,
   BarChart3,
   LayoutDashboard,
-  Building2
+  Building2,
+  Vote,
+  User,
+  Key,
 } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { CampusNavigation } from './components/CampusNavigation';
@@ -19,6 +22,7 @@ import { LoginModal } from './components/LoginModal';
 import { AssistantDrawer } from './components/AssistantDrawer';
 import { LandingPageView } from './components/LandingPageView';
 import { PublicLandingPage } from './components/PublicLandingPage';
+import { YuktiLogo } from './components/YuktiLogo';
 import { AcademicView } from './components/AcademicView';
 import { PromiseCheckView } from './components/PromiseCheckView';
 import { CampusFindView } from './components/CampusFindView';
@@ -28,6 +32,8 @@ import { HostelServicesView } from './components/HostelServicesView';
 import { AnnouncementsNotificationsView } from './components/AnnouncementsNotificationsView';
 import { FeedbackView } from './components/FeedbackView';
 import { AdminDashboardView } from './components/AdminDashboardView';
+import { CampusSurveysView } from './components/CampusSurveysView';
+import { ProfileView } from './components/ProfileView';
 
 import {
   UserProfile,
@@ -42,6 +48,7 @@ import {
   CampusNotification,
   FeedbackItem,
   CampusFindItem,
+  CampusSurvey,
 } from './types';
 
 import {
@@ -58,16 +65,17 @@ import {
   SAMPLE_NOTIFICATIONS,
   SAMPLE_FEEDBACK,
   SAMPLE_CAMPUS_FIND_ITEMS,
+  SAMPLE_SURVEYS,
 } from './data/mockData';
 
-const MODULE_IDS = ['landing', 'overview', 'academic', 'promisecheck', 'campusfind', 'documents', 'complaints', 'hostel', 'announcements', 'feedback', 'admin'];
+const MODULE_IDS = ['landing', 'overview', 'profile', 'academic', 'promisecheck', 'campusfind', 'documents', 'complaints', 'hostel', 'announcements', 'feedback', 'surveys', 'admin'];
 const readLocation = () => {
   const id = window.location.hash.slice(1);
   return MODULE_IDS.includes(id) ? id : 'landing';
 };
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_USER_STUDENT);
+  const [currentUser, setCurrentUser] = useLocalDemoState<UserProfile>('user-profile', INITIAL_USER_STUDENT);
   const [activeTab, updateActiveTab] = useState<string>(readLocation);
   const setActiveTab = (id: string) => {
     if (!MODULE_IDS.includes(id)) return;
@@ -84,6 +92,12 @@ export default function App() {
   const [currentLanguage, setCurrentLanguage] = useState<string>('English');
   const [isAssistantOpen, setIsAssistantOpen] = useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [loginTargetRole, setLoginTargetRole] = useState<UserRole | undefined>(undefined);
+
+  const handleOpenLogin = (role?: UserRole) => {
+    setLoginTargetRole(role);
+    setIsLoginModalOpen(true);
+  };
 
   // Ensure clean, daylight appearance without dark mode
   React.useEffect(() => {
@@ -102,12 +116,29 @@ export default function App() {
   const [notifications, setNotifications] = useLocalDemoState<CampusNotification[]>('notifications',SAMPLE_NOTIFICATIONS);
   const [feedbackList, setFeedbackList] = useLocalDemoState<FeedbackItem[]>('feedback',SAMPLE_FEEDBACK);
   const [campusFindItems, setCampusFindItems] = useLocalDemoState<CampusFindItem[]>('campusfind',SAMPLE_CAMPUS_FIND_ITEMS);
+  const [surveys, setSurveys] = useLocalDemoState<CampusSurvey[]>('surveys', SAMPLE_SURVEYS);
 
-  // Role Switcher
+  // Role Switcher & User Updater
   const handleSwitchRole = (role: UserRole) => {
     if (role === 'student') setCurrentUser(INITIAL_USER_STUDENT);
     else if (role === 'faculty') setCurrentUser(INITIAL_USER_FACULTY);
     else if (role === 'admin') setCurrentUser(INITIAL_USER_ADMIN);
+  };
+
+  const handleUpdateUser = (updated: Partial<UserProfile>) => {
+    setCurrentUser((prev) => ({ ...prev, ...updated }));
+  };
+
+  const handleResetDemoData = () => {
+    localStorage.clear();
+    setCurrentUser(INITIAL_USER_STUDENT);
+    setDocuments(SAMPLE_DOCUMENTS);
+    setComplaints(SAMPLE_COMPLAINTS);
+    setPasses(SAMPLE_HOSTEL_PASSES);
+    setNotifications(SAMPLE_NOTIFICATIONS);
+    setFeedbackList(SAMPLE_FEEDBACK);
+    setCampusFindItems(SAMPLE_CAMPUS_FIND_ITEMS);
+    setSurveys(SAMPLE_SURVEYS);
   };
 
   // Notification Actions
@@ -115,6 +146,10 @@ export default function App() {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
+  };
+
+  const handleMarkAllNotificationsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const handleClearNotifications = () => {
@@ -221,7 +256,95 @@ export default function App() {
     );
   };
 
-  // Tab List - Concise & Uncluttered
+  // Survey Actions
+  const handleVoteSurvey = (surveyId: string, optionId: string) => {
+    setSurveys((prev) =>
+      prev.map((survey) => {
+        if (survey.id !== surveyId) return survey;
+        const alreadyVoted = survey.voters.some(
+          (v) => v.userId === currentUser.id || v.userRollNo === currentUser.rollNo
+        );
+        if (alreadyVoted) return survey;
+
+        const updatedOptions = survey.options.map((opt) =>
+          opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt
+        );
+        const newVoterRecord: import('./types').SurveyVoterRecord = {
+          userId: currentUser.id,
+          userRollNo: currentUser.rollNo,
+          selectedOptionId: optionId,
+          timestamp: 'Just now',
+          department: currentUser.department,
+          year: currentUser.year,
+        };
+        return {
+          ...survey,
+          totalVotes: survey.totalVotes + 1,
+          options: updatedOptions,
+          voters: [newVoterRecord, ...survey.voters],
+        };
+      })
+    );
+
+    const targetSurvey = surveys.find((s) => s.id === surveyId);
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        title: 'Response Submitted',
+        message: `Your ballot for "${targetSurvey?.title || 'Campus Poll'}" has been securely counted. Real-time results updated.`,
+        timeAgo: 'Just now',
+        category: 'academic',
+        read: false,
+        actionTab: 'surveys',
+      },
+      ...prev,
+    ]);
+  };
+
+  const handlePublishSurvey = (newSurvey: CampusSurvey) => {
+    setSurveys((prev) => [newSurvey, ...prev]);
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        title: `New Campus Poll Published`,
+        message: `"${newSurvey.title}" is now live for voting across ${newSurvey.targetAudience}.`,
+        timeAgo: 'Just now',
+        category: 'announcement',
+        read: false,
+        actionTab: 'surveys',
+      },
+      ...prev,
+    ]);
+  };
+
+  const handleToggleSurveyStatus = (surveyId: string) => {
+    setSurveys((prev) =>
+      prev.map((s) =>
+        s.id === surveyId ? { ...s, status: s.status === 'active' ? 'closed' : 'active' } : s
+      )
+    );
+  };
+
+  const handleDeleteSurvey = (surveyId: string) => {
+    setSurveys((prev) => prev.filter((s) => s.id !== surveyId));
+  };
+
+  const handleSimulateIncomingVote = (surveyId: string, optionId: string) => {
+    setSurveys((prev) =>
+      prev.map((survey) => {
+        if (survey.id !== surveyId || survey.status !== 'active') return survey;
+        return {
+          ...survey,
+          totalVotes: survey.totalVotes + 1,
+          options: survey.options.map((opt) =>
+            opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt
+          ),
+        };
+      })
+    );
+  };
+
+  // Tab List - Concise & Uncluttered (Profile is solely accessible via top right option)
   const TABS = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'academic', label: 'Academics', icon: GraduationCap },
@@ -232,6 +355,7 @@ export default function App() {
     { id: 'hostel', label: 'Hostel & Mess', icon: Building2 },
     { id: 'announcements', label: 'Notices', icon: Megaphone },
     { id: 'feedback', label: 'Feedback', icon: MessageSquare },
+    { id: 'surveys', label: 'Campus Surveys', icon: Vote },
     { id: 'admin', label: 'Admin', icon: BarChart3 },
   ];
 
@@ -249,11 +373,13 @@ export default function App() {
         user={currentUser}
         onSwitchRole={handleSwitchRole}
         onOpenAssistant={() => setIsAssistantOpen(true)}
-        onOpenLogin={() => setIsLoginModalOpen(true)}
+        onOpenLogin={handleOpenLogin}
         currentLanguage={currentLanguage}
         onChangeLanguage={setCurrentLanguage}
         notifications={notifications}
         onMarkNotificationRead={handleMarkNotificationRead}
+        onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
+        onClearNotifications={handleClearNotifications}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
       />
@@ -273,6 +399,18 @@ export default function App() {
             notifications={notifications}
             announcements={announcements}
             currentUser={currentUser}
+            complaints={complaints}
+            passes={passes}
+          />
+        )}
+
+        {activeTab === 'profile' && (
+          <ProfileView
+            user={currentUser}
+            onUpdateUser={handleUpdateUser}
+            onSwitchRole={handleSwitchRole}
+            onOpenLogin={handleOpenLogin}
+            onOpenAssistant={() => setIsAssistantOpen(true)}
           />
         )}
 
@@ -342,17 +480,66 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'admin' && (
-          <AdminDashboardView
+        {activeTab === 'surveys' && (
+          <CampusSurveysView
             user={currentUser}
-            complaints={complaints}
-            documents={documents}
-            feedback={feedbackList}
-            passes={passes}
-            onUpdatePass={(id,status) => setPasses(previous => previous.map(pass => pass.id === id ? {...pass,status} : pass))}
-            onUpdateDocument={(id,status) => setDocuments(previous => previous.map(doc => doc.id === id ? {...doc,status,timeline:doc.timeline.map((step,index) => {const stage = ['submitted','under_review','hod_approved','ready'].indexOf(status);return {...step,status:index <= stage ? 'done' : index === stage+1 ? 'current' : 'pending',date:index<=stage?'Updated in local demo':'Pending'};})} : doc))}
-            onUpdateComplaintStatus={handleUpdateComplaintStatus}
+            surveys={surveys}
+            onVote={handleVoteSurvey}
+            onPublishSurvey={handlePublishSurvey}
+            onToggleStatus={handleToggleSurveyStatus}
+            onDeleteSurvey={handleDeleteSurvey}
+            onSimulateIncomingVote={handleSimulateIncomingVote}
           />
+        )}
+
+        {activeTab === 'admin' && (
+          currentUser.role === 'admin' ? (
+            <AdminDashboardView
+              user={currentUser}
+              complaints={complaints}
+              documents={documents}
+              feedback={feedbackList}
+              passes={passes}
+              onUpdatePass={(id,status) => setPasses(previous => previous.map(pass => pass.id === id ? {...pass,status} : pass))}
+              onUpdateDocument={(id,status) => setDocuments(previous => previous.map(doc => doc.id === id ? {...doc,status,timeline:doc.timeline.map((step,index) => {const stage = ['submitted','under_review','hod_approved','ready'].indexOf(status);return {...step,status:index <= stage ? 'done' : index === stage+1 ? 'current' : 'pending',date:index<=stage?'Updated in local demo':'Pending'};})} : doc))}
+              onUpdateComplaintStatus={handleUpdateComplaintStatus}
+            />
+          ) : (
+            <div className="max-w-2xl mx-auto py-12 px-4 text-center space-y-6">
+              <div className="h-16 w-16 mx-auto rounded-3xl bg-[#0B2038] text-amber-400 grid place-items-center shadow-lg">
+                <ShieldCheck className="h-9 w-9" />
+              </div>
+              <div className="space-y-2">
+                <span className="text-xs font-black uppercase tracking-widest text-amber-800 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full">
+                  Executive Clearance Required
+                </span>
+                <h2 className="text-2xl font-black text-slate-900">Institutional Governance Portal Locked</h2>
+                <p className="text-sm text-slate-600 max-w-md mx-auto">
+                  Access to executive grievance auto-triage, departmental approvals, and institutional seals requires authenticated Administrator (Dean / Registrar ADM-001) credentials.
+                </p>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 inline-flex items-center justify-center gap-3">
+                <span>Active session:</span>
+                <span className="font-bold text-slate-900">{currentUser.name}</span>
+                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold capitalize">{currentUser.role}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => handleOpenLogin('admin')}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#0B2038] hover:bg-[#123154] text-amber-400 font-bold text-xs transition shadow-md flex items-center justify-center gap-2"
+                >
+                  <Key className="h-4 w-4" />
+                  <span>Authenticate via Executive Admin Portal</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs transition"
+                >
+                  Return to Overview
+                </button>
+              </div>
+            </div>
+          )
         )}
       </main>
 
@@ -360,6 +547,7 @@ export default function App() {
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-600">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
+            <YuktiLogo size={18} variant="color" />
             <span className="font-extrabold text-slate-900">Yukti AI</span>
             <span className="text-slate-300">•</span>
             <span>Built for student success</span>
@@ -387,9 +575,15 @@ export default function App() {
       {/* Role Switcher & Login Modal */}
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          setLoginTargetRole(undefined);
+        }}
         currentUser={currentUser}
+        targetRole={loginTargetRole}
         onSelectUserRole={handleSwitchRole}
+        onNavigateToProfile={() => setActiveTab('profile')}
+        onResetDemoData={handleResetDemoData}
       />
     </div>
   );

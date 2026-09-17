@@ -6,6 +6,7 @@ import '../public-landing.css';
 import '../landing-motion.css';
 import { Pause, Play, ScanLine } from 'lucide-react';
 import { ServiceIllustration, RoleEmblem } from './LandingVisuals';
+import { YuktiLogo } from './YuktiLogo';
 
 interface Props { onNavigate: (id: string) => void; onExploreRole: (role: UserRole) => void; }
 const features = [
@@ -50,7 +51,7 @@ export function PublicLandingPage({ onNavigate, onExploreRole }: Props) {
     <a className="pl-skip" href="#public-main" onClick={event => { event.preventDefault(); document.getElementById('public-main')?.focus(); }}>Skip to content</a>
     <header className="pl-header">
       <div className="pl-nav-wrap">
-        <button className="pl-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })} aria-label="Yukti AI home"><span className="pl-brand-mark"><GraduationCap size={24}/></span>yukti ai<span className="pl-brand-dot">.</span></button>
+        <button className="pl-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })} aria-label="Yukti AI home"><span className="pl-brand-mark"><YuktiLogo size={26} variant="color" /></span>yukti ai<span className="pl-brand-dot">.</span></button>
         <nav className="pl-desktop-nav" aria-label="Landing page"><button onClick={() => scrollTo('pl-platform')}>The platform</button><button onClick={() => scrollTo('pl-promise')}>PromiseCheck AI <span>NEW</span></button><button onClick={() => scrollTo('pl-people')}>For your campus</button></nav>
         <div className="pl-nav-actions"><button className="pl-nav-login" onClick={() => onNavigate('overview')}>Open dashboard <ArrowUpRight size={16}/></button><button className="pl-menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="pl-mobile-nav" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X/> : <Menu/>}</button></div>
       </div>
@@ -108,6 +109,6 @@ export function PublicLandingPage({ onNavigate, onExploreRole }: Props) {
       <section className="pl-faq-section"><div className="pl-container pl-faq-grid"><div><p className="pl-kicker">GOOD QUESTIONS. CLEAR ANSWERS.</p><h2>A few things<br/>you might wonder.</h2><p>Get to know the workspace before you jump in.</p></div><div className="pl-faq-list">{questions.map(([question,answer]) => <details key={question}><summary>{question}<Plus size={18} aria-hidden="true"/></summary><p>{answer}</p></details>)}</div></div></section>
       <section className="pl-container pl-closing"><p className="pl-kicker">YOUR NEXT CHAPTER STARTS HERE</p><h2>Make campus life<br/>a little <span>lighter.</span></h2><button className="pl-button pl-button-dark" onClick={() => onExploreRole('student')}>Step inside Yukti AI <ArrowRight size={18}/></button><p>Explore the demo. Find your flow.</p></section>
     </main>
-    <footer className="pl-footer"><div className="pl-container"><div><span className="pl-brand"><GraduationCap size={24}/> yukti ai.</span><p>A little less admin. A lot more campus.</p></div><nav aria-label="Footer"><button onClick={() => scrollTo('pl-platform')}>Platform</button><button onClick={() => onNavigate('promisecheck')}>PromiseCheck</button><button onClick={() => onNavigate('overview')}>Dashboard <ArrowUpRight size={14}/></button></nav></div><div className="pl-container pl-footer-bottom"><span>© {new Date().getFullYear()} Yukti AI</span><span>Demo workspace · Sample campus records</span><span>Thoughtfully connected.</span></div></footer>
+    <footer className="pl-footer"><div className="pl-container"><div><span className="pl-brand inline-flex items-center gap-2"><YuktiLogo size={24} variant="color" /> yukti ai.</span><p>A little less admin. A lot more campus.</p></div><nav aria-label="Footer"><button onClick={() => scrollTo('pl-platform')}>Platform</button><button onClick={() => onNavigate('promisecheck')}>PromiseCheck</button><button onClick={() => onNavigate('overview')}>Dashboard <ArrowUpRight size={14}/></button></nav></div><div className="pl-container pl-footer-bottom"><span>© {new Date().getFullYear()} Yukti AI</span><span>Demo workspace · Sample campus records</span><span>Thoughtfully connected.</span></div></footer>
   </div>;
 }

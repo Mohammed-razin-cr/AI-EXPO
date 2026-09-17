@@ -10,7 +10,8 @@ import {
   CampusNotification,
   FeedbackItem,
   CampusFindItem,
-  PromiseCheckResult
+  PromiseCheckResult,
+  CampusSurvey
 } from '../types';
 
 export const INITIAL_USER_STUDENT: UserProfile = {
@@ -28,7 +29,48 @@ export const INITIAL_USER_STUDENT: UserProfile = {
   cgpa: 8.84,
   currentGpa: 9.12,
   overallAttendance: 84.5,
-  phone: '+1 (555) 438-9201'
+  phone: '+1 (555) 438-9201',
+  degreeProgram: 'Bachelor of Technology (B.Tech)',
+  admissionYear: '2023',
+  advisor: 'Dr. Marcus Vance',
+  dateOfBirth: '2004-06-18',
+  bloodGroup: 'O+ Positive',
+  address: 'Suite 4B, Westside Campus Avenue, Metro District',
+  rfidCardNumber: 'RFID-9942-8812',
+  libraryCardNo: 'LIB-CS-2024-104',
+  academicStanding: "Dean's Honours List",
+  creditsCompleted: 118,
+  creditsRequired: 160,
+  clubs: ['ACM Student Chapter (Vice Chair)', 'Robotics & AI Guild', 'Campus Debating Union'],
+  bio: 'Junior undergraduate specializing in Distributed Systems and Cloud Computing. Passionate about machine learning infrastructure and student governance.',
+  skills: ['Python', 'TypeScript', 'Distributed Systems', 'Cloud Architecture', 'React', 'Docker'],
+  emergencyContact: {
+    name: 'Elena Rivera',
+    relation: 'Mother / Primary Guardian',
+    phone: '+1 (555) 309-8422',
+    alternatePhone: '+1 (555) 981-1140',
+  },
+  twoFactorEnabled: true,
+  activeSessions: [
+    { id: 'sess-1', device: 'MacBook Pro 16"', browser: 'Chrome 128.0', ip: '192.168.1.42 (Campus WiFi)', location: 'Academic Block 3, Campus Core', lastActive: 'Active Now', isCurrent: true },
+    { id: 'sess-2', device: 'iPhone 15 Pro', browser: 'Yukti Mobile Web', ip: '10.24.12.89 (Hostel Cellular)', location: 'Falcon Hall Block-B', lastActive: '2 hours ago', isCurrent: false },
+    { id: 'sess-3', device: 'Linux Workstation #14', browser: 'Firefox 129', ip: '172.16.8.10 (Computer Systems Lab)', location: 'CS Dept Lab 4', lastActive: 'Yesterday, 18:40', isCurrent: false },
+  ],
+  securityAuditLogs: [
+    { id: 'aud-1', action: 'Digital Student ID Card NFC Access', category: 'hostel', timestamp: 'Today at 08:15 AM', ipAddress: 'Turnstile Terminal #04', status: 'success' },
+    { id: 'aud-2', action: 'Campus Survey Vote Cast: Library 24/7 Access', category: 'profile', timestamp: 'Yesterday at 04:32 PM', ipAddress: '192.168.1.42', status: 'success' },
+    { id: 'aud-3', action: 'Two-Factor Authentication (TOTP) Verified', category: 'auth', timestamp: '2 days ago', ipAddress: '192.168.1.42', status: 'info' },
+    { id: 'aud-4', action: 'Hostel Outpass Application Submitted', category: 'hostel', timestamp: '3 days ago', ipAddress: '10.24.12.89', status: 'success' },
+  ],
+  notificationSettings: {
+    emailAlerts: true,
+    pushAlerts: true,
+    smsAlerts: false,
+    examDeadlines: true,
+    complaintUpdates: true,
+    surveyReminders: true,
+    hostelPassUpdates: true,
+  },
 };
 
 export const INITIAL_USER_FACULTY: UserProfile = {
@@ -46,7 +88,44 @@ export const INITIAL_USER_FACULTY: UserProfile = {
   cgpa: 0,
   currentGpa: 0,
   overallAttendance: 98,
-  phone: '+1 (555) 892-1100'
+  phone: '+1 (555) 892-1100',
+  degreeProgram: 'Ph.D. in High-Performance Computing (Stanford)',
+  admissionYear: 'Faculty Appointed 2018',
+  advisor: 'Dean Eleanor Vance (Senate)',
+  dateOfBirth: '1982-11-24',
+  bloodGroup: 'A+ Positive',
+  address: 'Faculty Residency Quarters, Building Q-14, University Greens',
+  rfidCardNumber: 'RFID-FAC-802-ALL',
+  libraryCardNo: 'LIB-FAC-THORNE',
+  academicStanding: 'Tenured Academic Head',
+  creditsCompleted: 0,
+  creditsRequired: 0,
+  clubs: ['IEEE Student Branch (Faculty Counselor)', 'Graduate Systems Research Group'],
+  bio: 'Associate Professor of Computer Science specializing in distributed storage, consensus algorithms, and next-generation operating systems.',
+  skills: ['Distributed Systems', 'C/C++', 'Concurrency', 'Formal Verification', 'Curriculum Design'],
+  emergencyContact: {
+    name: 'Dr. Sarah Thorne',
+    relation: 'Spouse',
+    phone: '+1 (555) 892-1101',
+  },
+  twoFactorEnabled: true,
+  activeSessions: [
+    { id: 'sess-f1', device: 'MacBook Pro 14"', browser: 'Safari 17.5', ip: '192.168.2.18 (Faculty Office)', location: 'CS Building Office 402', lastActive: 'Active Now', isCurrent: true },
+    { id: 'sess-f2', device: 'iPad Pro', browser: 'Safari Mobile', ip: '10.24.18.5 (Campus Library WiFi)', location: 'Central Library Staff Lounge', lastActive: '4 hours ago', isCurrent: false },
+  ],
+  securityAuditLogs: [
+    { id: 'aud-f1', action: 'Grade Registry Signed & Certified (CS601)', category: 'academic', timestamp: 'Today at 09:30 AM', ipAddress: '192.168.2.18', status: 'success' },
+    { id: 'aud-f2', action: 'Document Endorsement Signed (Transcripts)', category: 'academic', timestamp: 'Yesterday at 02:15 PM', ipAddress: '192.168.2.18', status: 'success' },
+  ],
+  notificationSettings: {
+    emailAlerts: true,
+    pushAlerts: true,
+    smsAlerts: true,
+    examDeadlines: true,
+    complaintUpdates: true,
+    surveyReminders: false,
+    hostelPassUpdates: true,
+  },
 };
 
 export const INITIAL_USER_ADMIN: UserProfile = {
@@ -64,7 +143,43 @@ export const INITIAL_USER_ADMIN: UserProfile = {
   cgpa: 0,
   currentGpa: 0,
   overallAttendance: 100,
-  phone: '+1 (555) 200-3499'
+  phone: '+1 (555) 200-3499',
+  degreeProgram: 'Doctor of Education & Institutional Governance',
+  admissionYear: 'Executive Appointed 2015',
+  advisor: 'University Board of Regents',
+  dateOfBirth: '1976-04-12',
+  bloodGroup: 'B+ Positive',
+  address: 'Executive Heights #10, University Campus East',
+  rfidCardNumber: 'RFID-ADM-001-MASTER',
+  libraryCardNo: 'LIB-EXEC-001',
+  academicStanding: 'Dean of Academic Affairs',
+  creditsCompleted: 0,
+  creditsRequired: 0,
+  clubs: ['Academic Governance Senate', 'Campus Ethical Integrity Commission'],
+  bio: 'Dean of Academic Affairs overseeing student welfare, faculty appointments, statutory accreditation, and digital campus modernization.',
+  skills: ['Institutional Leadership', 'Academic Accreditation', 'Policy Formulation', 'Dispute Resolution'],
+  emergencyContact: {
+    name: 'Robert Vance',
+    relation: 'Spouse',
+    phone: '+1 (555) 200-3488',
+  },
+  twoFactorEnabled: true,
+  activeSessions: [
+    { id: 'sess-a1', device: 'ThinkPad X1 Carbon', browser: 'Chrome Enterprise', ip: '10.0.1.5 (Admin Secure VLAN)', location: 'Administration Tower Suite 101', lastActive: 'Active Now', isCurrent: true },
+  ],
+  securityAuditLogs: [
+    { id: 'aud-a1', action: 'Campus Emergency Broadcast Certified', category: 'system', timestamp: 'Today at 07:00 AM', ipAddress: '10.0.1.5', status: 'success' },
+    { id: 'aud-a2', action: 'Administrative Role Elevation Audited', category: 'auth', timestamp: 'Yesterday at 11:20 AM', ipAddress: '10.0.1.5', status: 'info' },
+  ],
+  notificationSettings: {
+    emailAlerts: true,
+    pushAlerts: true,
+    smsAlerts: true,
+    examDeadlines: true,
+    complaintUpdates: true,
+    surveyReminders: true,
+    hostelPassUpdates: true,
+  },
 };
 
 export const SAMPLE_COURSES: AcademicCourse[] = [
@@ -586,3 +701,150 @@ Deposit ₹4,999 refundable security kit fee to receive company portal credentia
 Thousands of college students already earning weekly payouts directly to bank account!`
   }
 ];
+
+export const SAMPLE_SURVEYS: CampusSurvey[] = [
+  {
+    id: 'poll-001',
+    title: '24/7 Central Library Hours During Mid-Term & Final Examination Weeks',
+    description: 'The Academic Senate is reviewing options to extend library operating hours to support overnight study groups during the upcoming examination cycle.',
+    category: 'academics',
+    createdBy: 'Office of Academic Affairs',
+    creatorRole: 'admin',
+    publishedAt: 'Sep 15, 2026, 09:00 AM',
+    expiresAt: 'Sep 25, 2026, 11:59 PM',
+    status: 'active',
+    allowAnonymous: true,
+    targetAudience: 'All Students & Faculty',
+    pinned: true,
+    totalVotes: 613,
+    options: [
+      { id: 'opt-1-1', text: 'Yes, keep the entire 3-floor library open 24/7 with overnight security', votes: 342 },
+      { id: 'opt-1-2', text: 'Keep 1st Floor Study Pods & Silent Room open 24/7; close book stacks at 11 PM', votes: 189 },
+      { id: 'opt-1-3', text: 'Extend operating hours to 2:00 AM instead of continuous 24/7', votes: 64 },
+      { id: 'opt-1-4', text: 'Maintain standard closing time of 11:00 PM', votes: 18 },
+    ],
+    voters: [
+      {
+        userId: 'usr-demo-01',
+        userRollNo: '2023EC089',
+        selectedOptionId: 'opt-1-1',
+        timestamp: 'Sep 15, 2026, 10:15 AM',
+        department: 'Electronics & Communication',
+        year: '4th Year'
+      },
+      {
+        userId: 'usr-demo-02',
+        userRollNo: '2025ME041',
+        selectedOptionId: 'opt-1-2',
+        timestamp: 'Sep 15, 2026, 11:30 AM',
+        department: 'Mechanical Engineering',
+        year: '2nd Year'
+      }
+    ]
+  },
+  {
+    id: 'poll-002',
+    title: 'Hostel Late-Night Dining & Mess Tuck-Shop Hours Revamp',
+    description: 'Feedback poll from the Hostel Warden Committee on introducing extended midnight refreshments and hot beverage counters across Falcon, Phoenix, and Aster dormitories.',
+    category: 'dining_hostel',
+    createdBy: 'Dean of Student Welfare',
+    creatorRole: 'admin',
+    publishedAt: 'Sep 16, 2026, 02:30 PM',
+    expiresAt: 'Sep 28, 2026, 06:00 PM',
+    status: 'active',
+    allowAnonymous: true,
+    targetAudience: 'Hostel Residents',
+    pinned: false,
+    totalVotes: 799,
+    options: [
+      { id: 'opt-2-1', text: 'Option A: 24-hr smart automated refrigerated kiosks with hot meals & smoothies', votes: 215 },
+      { id: 'opt-2-2', text: 'Option B: Extend Falcon & Phoenix mess tuck-shop staffed counters until 2:30 AM', votes: 388 },
+      { id: 'opt-2-3', text: 'Option C: Partner with university-verified student food stalls inside campus quad', votes: 167 },
+      { id: 'opt-2-4', text: 'Current timings are sufficient', votes: 29 },
+    ],
+    voters: [
+      {
+        userId: 'usr-demo-03',
+        userRollNo: '2024CS201',
+        selectedOptionId: 'opt-2-2',
+        timestamp: 'Sep 16, 2026, 04:05 PM',
+        department: 'Computer Science & Engineering',
+        year: '3rd Year'
+      }
+    ]
+  },
+  {
+    id: 'poll-003',
+    title: 'Annual Tech-Cultural Symposium 2026: Official Theme Poll',
+    description: 'Vote for the overarching visual design, keynotes, and hackathon problem statement theme for Yukti Fest 2026.',
+    category: 'events',
+    createdBy: 'Student Council Executive Board',
+    creatorRole: 'admin',
+    publishedAt: 'Sep 12, 2026, 10:00 AM',
+    expiresAt: 'Sep 22, 2026, 11:59 PM',
+    status: 'active',
+    allowAnonymous: false,
+    targetAudience: 'All Campus',
+    pinned: false,
+    totalVotes: 1185,
+    options: [
+      { id: 'opt-3-1', text: 'Cyberspace Odyssey: AI & The Creative Frontier', votes: 412 },
+      { id: 'opt-3-2', text: 'Solarpunk Metropolis: Sustainable Innovation & Clean Tech', votes: 348 },
+      { id: 'opt-3-3', text: 'Retro-Futurism: 80s Synthwave meets Quantum Systems', votes: 280 },
+      { id: 'opt-3-4', text: 'Bio-Digital Genesis: Bioinformatics, Robotics & Prosthetics', votes: 145 },
+    ],
+    voters: [
+      {
+        userId: 'usr-student-01',
+        userRollNo: '2024CS104',
+        selectedOptionId: 'opt-3-1',
+        timestamp: 'Sep 13, 2026, 01:20 PM',
+        department: 'Computer Science & Engineering',
+        year: '3rd Year'
+      }
+    ]
+  },
+  {
+    id: 'poll-004',
+    title: 'Campus Electric Shuttle Route Expansion & Green Mobility Stops',
+    description: 'Campus Operations is adding 4 new zero-emission electric shuttles. Help us prioritize the primary transit loop frequency.',
+    category: 'facilities',
+    createdBy: 'Campus Infrastructure & Green Energy Council',
+    creatorRole: 'admin',
+    publishedAt: 'Sep 14, 2026, 11:15 AM',
+    expiresAt: 'Sep 30, 2026, 05:00 PM',
+    status: 'active',
+    allowAnonymous: true,
+    targetAudience: 'All Campus',
+    pinned: false,
+    totalVotes: 780,
+    options: [
+      { id: 'opt-4-1', text: 'Direct South Gate Metro Station to Engineering Quad Express (Peak 5-min intervals)', votes: 276 },
+      { id: 'opt-4-2', text: 'Residential Falcon/Phoenix Hostel to Dining Commons & Sports Arena Link', votes: 310 },
+      { id: 'opt-4-3', text: 'Full Campus Perimeter Loop with 6 designated pickup shelters', votes: 194 },
+    ],
+    voters: []
+  },
+  {
+    id: 'poll-005',
+    title: 'Evaluation of Hybrid vs In-Person Hackathon Track for Winter 2026',
+    description: 'Post-event curriculum review poll regarding competitive programming and collegiate hackathon formats.',
+    category: 'academics',
+    createdBy: 'Department of Computer Science',
+    creatorRole: 'admin',
+    publishedAt: 'Sep 01, 2026, 09:00 AM',
+    expiresAt: 'Sep 10, 2026, 11:59 PM',
+    status: 'closed',
+    allowAnonymous: true,
+    targetAudience: 'Engineering & Computing Cohorts',
+    pinned: false,
+    totalVotes: 1217,
+    options: [
+      { id: 'opt-5-1', text: '100% In-Person 36-hour physical hackathon in Main Auditorium', votes: 520 },
+      { id: 'opt-5-2', text: 'Hybrid model: Remote preliminary sprint + Top 25 teams in-person finals', votes: 615 },
+      { id: 'opt-5-3', text: 'Fully remote with distributed international industry mentors', votes: 82 },
+    ],
+    voters: []
+  }
+];
+
