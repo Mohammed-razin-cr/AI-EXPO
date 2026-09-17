@@ -2,8 +2,12 @@ node_modules/
 .cache/
 build/
 dist/
+public/
 coverage/
 .DS_Store
 *.log
 .env*
 !.env.example
+
+.vercel
+.env*

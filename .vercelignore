@@ -4,5 +4,6 @@
 .cache
 .codex-dev*.log
 dist
+public
 coverage
 tests

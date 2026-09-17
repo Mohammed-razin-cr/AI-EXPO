@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build:client": "vite build",
+    "build:vercel": "vite build --outDir public",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs",
     "start": "node dist/server.mjs",
     "prepare:model": "tsx scripts/prepare-model.ts",
