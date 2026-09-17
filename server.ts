@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'node:path';
-import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import { generate, aiStatus, AIError } from './server/ai.js';
@@ -113,7 +112,7 @@ app.use((error:any,_req:Request,res:Response,_next:NextFunction)=>{
   res.status(error instanceof AIError?error.status:error.status===413?413:500).json({error:error instanceof AIError?error.message:error.status===413?'Upload is too large. Use an image under 5 MB.':'The request failed. Please retry.'});
 });
 async function start() {
- if(process.env.NODE_ENV!=='production'&&!process.argv[1]?.endsWith('server.mjs')) { const vite=await createViteServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares); }
+ if(process.env.NODE_ENV!=='production'&&!process.argv[1]?.endsWith('server.mjs')) { const {createServer:createViteServer}=await import('vite');const vite=await createViteServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares); }
  else { app.use(express.static(path.resolve('dist'))); app.get('*',(_req,res)=>res.sendFile(path.resolve('dist/index.html'))); }
  app.listen(Number(process.env.PORT)||3000,process.env.HOST||'127.0.0.1',()=>console.log('Yukti AI running on port '+(process.env.PORT||3000)));
 }
