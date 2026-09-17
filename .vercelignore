@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+.cache
+.codex-dev*.log
+dist
+coverage
+tests
