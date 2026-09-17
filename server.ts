@@ -3,10 +3,10 @@ import path from 'node:path';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { z } from 'zod';
-import { generate, aiStatus, AIError } from './server/ai';
-import { matchItems, LOCAL_MODEL } from './server/local-model';
-import { promiseResult, triageResult, reportResult, itemSchema } from './server/schemas';
-import { databaseStatus, readState, STATE_BUCKETS, writeState } from './server/database';
+import { generate, aiStatus, AIError } from './server/ai.js';
+import { matchItems, LOCAL_MODEL } from './server/local-model.js';
+import { promiseResult, triageResult, reportResult, itemSchema } from './server/schemas.js';
+import { databaseStatus, readState, STATE_BUCKETS, writeState } from './server/database.js';
 dotenv.config({quiet:true});
 const app = express();
 app.use(express.json({limit:'8mb'}));
@@ -104,6 +104,10 @@ app.post('/api/admin/generate-report',route(async(req,res)=>{
   res.json({...reportResult.parse(result.value),provider:result.provider,model:result.model});
 }));
 app.use('/api',(_req,res)=>res.status(404).json({error:'Unknown API endpoint.'}));
+if(process.env.VERCEL) {
+  app.use(express.static(path.resolve('public')));
+  app.get('*',(_req,res)=>res.sendFile(path.resolve('public/index.html')));
+}
 app.use((error:any,_req:Request,res:Response,_next:NextFunction)=>{
   if(error instanceof z.ZodError) return res.status(422).json({error:'Invalid request or AI response format. Please review the inputs and retry.'});
   res.status(error instanceof AIError?error.status:error.status===413?413:500).json({error:error instanceof AIError?error.message:error.status===413?'Upload is too large. Use an image under 5 MB.':'The request failed. Please retry.'});

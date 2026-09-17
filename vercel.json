@@ -4,7 +4,8 @@
   "buildCommand": "npm run build:vercel",
   "functions": {
     "server.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "public/**"
     }
   }
 }
